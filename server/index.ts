@@ -2,37 +2,15 @@ import axios from "axios";
 import { auth } from "./auth";
 import { inoreader } from "./inoreader";
 
-interface ServerConfig {
-  inoreaderAuthUrl: string;
-  inoreaderServerUrl: string;
-  corsProxyUrl: string;
-}
-
-const devConfig: ServerConfig = {
-  inoreaderAuthUrl: "http://localhost:3777/",
-  inoreaderServerUrl: "www.innoreader.com",
-  corsProxyUrl: "http://localhost:8080",
-};
-
-const prdConfig: ServerConfig = {
-  inoreaderAuthUrl: "https://helloo.world/",
-  inoreaderServerUrl: "www.innoreader.com",
-  corsProxyUrl: "https://helloo.world/cors",
-};
-
-let serverConfig: ServerConfig = prdConfig;
-
-export const INOREADER_AUTH_URL = serverConfig.inoreaderAuthUrl;
-
 const fetch = axios.create({
-  baseURL: `${serverConfig.corsProxyUrl}/${serverConfig.inoreaderServerUrl}`,
+  baseURL: `${process.env.CORS_PROXT_URL}/${process.env.INOREADER_SERVER_URL}`,
   timeout: 60 * 60 * 1000,
 });
 
 // 请求拦截器
 fetch.interceptors.request.use(
   (config) => {
-    const inoreaderToken = "cd32d2688be1b84515240dc268740e1a05b8d683";
+    const inoreaderToken = process.env.INOREADER_TOKEN;
     if (inoreaderToken && config.headers) {
       config.headers.Authorization = `Bearer ${inoreaderToken}`;
     }
