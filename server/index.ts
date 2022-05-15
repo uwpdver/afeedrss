@@ -1,16 +1,17 @@
 import axios from "axios";
-import { auth } from "./auth";
+import { StorageKeys } from "../constants";
 import { inoreader } from "./inoreader";
 
 const fetch = axios.create({
-  baseURL: `${process.env.CORS_PROXT_URL}/${process.env.INOREADER_SERVER_URL}`,
+  baseURL: "/api/inoreader",
   timeout: 60 * 60 * 1000,
 });
 
 // 请求拦截器
 fetch.interceptors.request.use(
   (config) => {
-    const inoreaderToken = process.env.INOREADER_TOKEN;
+    const inoreaderToken =
+      localStorage && localStorage.getItem(StorageKeys.INOREADER_TOKEN);
     if (inoreaderToken && config.headers) {
       config.headers.Authorization = `Bearer ${inoreaderToken}`;
     }
@@ -37,8 +38,8 @@ fetch.interceptors.response.use(
       error.response?.data ===
         "AppId required! Contact app developer. See https://inoreader.dev"
     ) {
-      if(typeof window !== 'undefined'){
-        window.localStorage.removeItem("inoreaderToken");
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(StorageKeys.INOREADER_TOKEN);
         window.location.reload();
       }
     }
@@ -46,6 +47,6 @@ fetch.interceptors.response.use(
   }
 );
 
-const api = { auth, inoreader };
+const api = { inoreader };
 
 export { api as default, fetch };

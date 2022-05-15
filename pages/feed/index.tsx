@@ -1,96 +1,26 @@
-import React from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 import {
   IconButton,
+  Spinner,
   Stack,
   StackItem,
   List,
   Image,
   ImageFit,
-  mergeStyleSets,
   Text,
 } from "@fluentui/react";
-import { GetServerSideProps } from "next";
+import { Waypoint } from "react-waypoint";
+
 import { useStreamContent } from "./../../utils/useStreamContent";
-import {
-  StreamContentQueryKeyParmas,
-  getStreamContentQueryKey,
-} from "../../utils/getStreamContentQueryKey";
-import { StreamContentItem } from "../../server/inoreader";
-import SourcesPanel from "./sourcesPanel";
 import { filterImgSrcfromHtmlStr } from "../../utils/filterImgSrcfromHtmlStr";
+import { StreamContentItem } from "../../server/inoreader";
 
-interface Props extends StreamContentQueryKeyParmas {}
+import StatusCard, { Status } from "../../components/statusCard";
+import SourcesPanel from "../../components/sourcePanel";
 
-export default function Feed({ streamId, userId, unreadOnly }: Props) {
-  const streamContentQuery = useStreamContent({
-    unreadOnly,
-    userId,
-    streamId,
-  });
-
-  const onRenderCell = (item?: StreamContentItem): React.ReactNode => {
-    if (!item) return null;
-    const { title } = item;
-    return (
-      <Stack
-        horizontal
-        data-is-focusable={true}
-        tokens={{ childrenGap: 16 }}
-        className="mb-3 mx-4 p-3 bg-white rounded-lg shadow-sm"
-      >
-        <StackItem shrink>
-          <Image
-            src={filterImgSrcfromHtmlStr(item.summary.content)}
-            width={100}
-            height={100}
-            imageFit={ImageFit.cover}
-            className="bg-gray-300 rounded-md"
-            alt=""
-          />
-        </StackItem>
-        <StackItem grow>
-          <Text>{title}</Text>
-        </StackItem>
-      </Stack>
-    );
-  };
-
-  const getStreamContentListItems = () => {
-    const initList: StreamContentItem[] = [];
-    if (!streamContentQuery.data || !streamContentQuery.data.pages) {
-      return initList;
-    }
-    const { pages } = streamContentQuery.data;
-    const items = pages.reduce((acc, cur) => acc.concat(cur.items), initList);
-    return items;
-  };
-
-  return (
-    <Stack horizontal>
-      <StackItem shrink={false}>
-        <nav className="">
-          <Stack>
-            <IconButton iconProps={{ iconName: "GlobalNavButton" }} />
-            <IconButton iconProps={{ iconName: "Home" }} />
-            <IconButton iconProps={{ iconName: "Settings" }} />
-          </Stack>
-        </nav>
-      </StackItem>
-      <main className="relative grid grid-cols-24 h-screen overflow-hidden bg-gray-100">
-        <div className="col-span-4 sticky top-0 overflow-y-scroll scrollbar bg-white">
-          <SourcesPanel />
-        </div>
-        <div className="col-span-7 overflow-y-scroll scrollbar"  data-is-scrollable="true">
-          <List
-            items={getStreamContentListItems()}
-            onRenderCell={onRenderCell}
-          />
-        </div>
-        <div className="col-span-13 overflow-y-scroll scrollbar bg-white"></div>
-      </main>
-    </Stack>
-  );
-}
+interface Props {}
 
 const getQueryParma = (query: string | string[] | undefined) => {
   if (Array.isArray(query)) {
@@ -100,31 +30,175 @@ const getQueryParma = (query: string | string[] | undefined) => {
   }
 };
 
-export const getServerSideProps: GetServerSideProps<
-  any,
-  {
-    streamId: string;
-    userId: string;
-    unreadOnly: string;
-  },
-  any
-> = async (context) => {
-  const articleId = getQueryParma(context.query.articleId) ?? "";
-  const streamId = getQueryParma(context.query.streamId) ?? "";
-  const userId = getQueryParma(context.query.userId) || "1006201176";
-  const unreadOnly = !!getQueryParma(context.query.unreadOnly);
-  const streamContentQueryKey = getStreamContentQueryKey({
-    streamId,
-    userId,
+export default function Feed({}: Props) {
+  const router = useRouter();
+  const articleId = getQueryParma(router.query.articleId) ?? "";
+  const streamId = getQueryParma(router.query.streamId) ?? "";
+  const userId = getQueryParma(router.query.userId) || "";
+  const unreadOnly = !!getQueryParma(router.query.unreadOnly);
+
+  const [curArticle, setCurArticle] = useState<StreamContentItem | null>(null);
+  const [isAritleTitleShow, setIsAritleTitleShow] = useState(false);
+  const streamContentQuery = useStreamContent({
     unreadOnly,
+    userId,
+    streamId,
   });
-  return {
-    props: {
-      streamContentQueryKey,
-      articleId,
-      streamId,
-      userId,
-      unreadOnly,
-    },
+  const articleScrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const streamContentListItems = useMemo(() => {
+    const initList: StreamContentItem[] = [];
+    if (!streamContentQuery.data || !streamContentQuery.data.pages) {
+      return initList;
+    }
+    const { pages } = streamContentQuery.data;
+    const items = pages.reduce((acc, cur) => acc.concat(cur.items), initList);
+    return items;
+  }, [streamContentQuery.data]);
+
+  useEffect(() => {
+    if (articleScrollContainerRef.current) {
+      articleScrollContainerRef.current.scrollTop = 0;
+    }
+  }, [curArticle?.id]);
+
+  const onEnterWaypoint = () => {
+    if (streamContentQuery.hasNextPage) {
+      streamContentQuery.fetchNextPage();
+    }
   };
-};
+
+  const onRenderCell = (
+    item?: StreamContentItem,
+    index?: number
+  ): React.ReactNode => {
+    if (!item) return null;
+    const { title } = item;
+    const onClickTitle = () => {
+      setCurArticle(item);
+    };
+
+    return (
+      <>
+        <Stack
+          horizontal
+          data-is-focusable={true}
+          tokens={{ childrenGap: 16 }}
+          className="mb-3 p-3"
+        >
+          <StackItem shrink>
+            <Image
+              src={filterImgSrcfromHtmlStr(item.summary.content)}
+              width={80}
+              height={80}
+              imageFit={ImageFit.cover}
+              className="bg-gray-300 rounded-md"
+              alt=""
+            />
+          </StackItem>
+          <StackItem grow>
+            <Text onClick={onClickTitle} className="cursor-pointer">
+              {title}
+            </Text>
+          </StackItem>
+        </Stack>
+        {index === streamContentListItems.length - 1 ? (
+          <Waypoint onEnter={onEnterWaypoint} />
+        ) : null}
+      </>
+    );
+  };
+
+  const onRenderList = () => {
+    if (streamContentQuery.isFetched) {
+      if (streamContentQuery.error) {
+        return <StatusCard status={Status.ERROR} content="出错了" />;
+      } else if (streamContentListItems.length === 0) {
+        return <StatusCard status={Status.EMPTY} content="这里是空的" />;
+      }
+    }
+    return (
+      <List
+        items={streamContentListItems}
+        onRenderCell={onRenderCell}
+        onShouldVirtualize={() => false}
+      />
+    );
+  };
+
+  return (
+    <div
+      className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100"
+      style={{
+        gridTemplateRows: `48px auto`,
+      }}
+    >
+      <Stack
+        horizontal
+        verticalAlign="center"
+        horizontalAlign="space-between"
+        className="row-start-1 col-span-4 bg-white px-4"
+      >
+        <Text className="text-lg font-bold">Feeds</Text>
+        <Link href="/settings" passHref>
+          <a>
+            <IconButton iconProps={{ iconName: "Settings" }} />
+          </a>
+        </Link>
+      </Stack>
+      <Stack
+        horizontal
+        verticalAlign="center"
+        className="row-start-1 col-span-7 bg-gray-50 px-4"
+      >
+        <Text className="text-lg font-bold">未读文章</Text>
+      </Stack>
+      <Stack
+        horizontal
+        verticalAlign="center"
+        className="row-start-1  col-span-13 bg-white px-4"
+      >
+        {isAritleTitleShow && (
+          <Text className="text-lg font-bold block truncate">
+            {curArticle?.title}
+          </Text>
+        )}
+      </Stack>
+      <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar bg-white">
+        <SourcesPanel />
+      </div>
+      <div
+        className="row-start-2 col-span-7 overflow-y-scroll scrollbar bg-gray-50"
+        data-is-scrollable="true"
+      >
+        {onRenderList()}
+        <div className="flex justify-center w-full p-4">
+          {streamContentQuery.isFetching && <Spinner />}
+        </div>
+      </div>
+      <div className="row-start-2 col-span-13 bg-white relative">
+        <div
+          className="overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-400 w-full h-full absolute top-0 left-0"
+          ref={articleScrollContainerRef}
+        >
+          {curArticle ? (
+            <article className="prose mx-auto mt-24">
+              <h1>{curArticle?.title}</h1>
+              <Waypoint
+                key={curArticle?.title}
+                onEnter={() => setIsAritleTitleShow(false)}
+                onLeave={() => setIsAritleTitleShow(true)}
+              />
+              <Text className="text-gray-400 text-sm">{`${curArticle?.origin.title}/${curArticle?.published}`}</Text>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: curArticle?.summary.content ?? "",
+                }}
+              />
+            </article>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}

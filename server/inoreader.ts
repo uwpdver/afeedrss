@@ -1,6 +1,6 @@
+import qs from "query-string";
 import { fetch } from "./index";
 import { InoreaderTag } from "../types";
-import qs from "query-string";
 
 export enum TextDirection {
   ltr = "ltr",
@@ -64,14 +64,20 @@ export interface InoreaderTagListResponse {
   tags: InoreaderTag[];
 }
 
-export const SystemStreamIDs = {
-  READ: "user/-/state/com.google/read", // Read articles.
-  STARRED: "user/-/state/com.google/starred", // Starred articles.
-  BROADCAST: "user/-/state/com.google/broadcast", // Broadcasted articles.
-  ANNOTATIONS: "user/-/state/com.google/annotations", // Annotated articles.
-  LIKE: "user/-/state/com.google/like", // Likes articles.
-  SAVE_WEB_PAGES: "user/-/state/com.google/saved-web-pages", // Saved web pages.
-};
+export enum SystemStreamIDs {
+  READ = "user/-/state/com.google/read", // Read articles.
+  STARRED = "user/-/state/com.google/starred", // Starred articles.
+  BROADCAST = "user/-/state/com.google/broadcast", // Broadcasted articles.
+  ANNOTATIONS = "user/-/state/com.google/annotations", // Annotated articles.
+  LIKE = "user/-/state/com.google/like", // Likes articles.
+  SAVE_WEB_PAGES = "user/-/state/com.google/saved-web-pages", // Saved web pages.
+}
+
+interface MarkAritleParmas {
+  i: string | string[];
+  a?: SystemStreamIDs;
+  r?: SystemStreamIDs;
+}
 
 export const inoreader = {
   // Subscription list
@@ -144,7 +150,7 @@ export const inoreader = {
       },
     }),
   markArticleAsRead: (id: string | string[], asUnread?: boolean) => {
-    const params = { i: id };
+    const params: MarkAritleParmas = { i: id };
     if (asUnread) {
       params["r"] = SystemStreamIDs.READ;
     } else {
@@ -167,7 +173,7 @@ export const inoreader = {
     });
   },
   markArticleAsStar: (id: string, isStar?: boolean) => {
-    const params = { i: id };
+    const params: MarkAritleParmas = { i: id };
     if (isStar) {
       params["a"] = SystemStreamIDs.STARRED;
     } else {

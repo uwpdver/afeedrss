@@ -2,12 +2,13 @@ import React, { ReactElement } from "react";
 import {
   Stack,
   Text,
+  Image,
   INavLink,
   Nav,
   IRenderFunction,
   Icon,
 } from "@fluentui/react";
-import { get } from "lodash";
+import { useRouter } from "next/router";
 import { FolderEntity, InoreaderTag } from "../../types";
 import {
   SystemStreamIDs,
@@ -20,8 +21,8 @@ import {
   createBuildInNavLink,
 } from "../../utils/sources";
 import { normalize, NormalizedSchema, schema } from "normalizr";
-import Image from "next/image";
 import { Subscription, SubscriptionEntity } from "../../types";
+import qs from "query-string";
 
 const folder = new schema.Entity("folder");
 const subscription = new schema.Entity("subscription", undefined);
@@ -31,6 +32,7 @@ export interface Props {
 }
 
 const SourcesPanel = ({ className }: Props) => {
+  const router = useRouter();
   const isIconDisplay = true;
 
   const userId = "1006201176";
@@ -46,7 +48,7 @@ const SourcesPanel = ({ className }: Props) => {
           return (
             <div className="mr-2 w-6 text-center">
               <div className="w-4 h-4 mx-auto relative">
-                <Image src={props.iconUrl} alt="" layout="fill" />
+                <Image src={props.iconUrl} alt="" />
               </div>
             </div>
           );
@@ -132,6 +134,8 @@ const SourcesPanel = ({ className }: Props) => {
     item?: INavLink
   ) => {
     e?.preventDefault();
+    const query = qs.stringify({ ...router.query, streamId: item?.key });
+    router.push(`/feed?${query}`);
   };
 
   const allArticleStreamId = `user/${userId}/state/com.google/root`;
