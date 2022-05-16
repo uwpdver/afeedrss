@@ -97,9 +97,21 @@ export default function Feed({}: Props) {
             />
           </StackItem>
           <StackItem grow>
-            <Text onClick={onClickTitle} className="cursor-pointer">
-              {title}
-            </Text>
+            <Stack>
+              <Text onClick={onClickTitle} className="cursor-pointer" block>
+                {title}
+              </Text>
+              <Stack horizontal verticalAlign="center">
+                <StackItem grow>
+                  <Text className="text-xs text-gray-400">
+                    {item.origin.title}
+                  </Text>
+                </StackItem>
+                <StackItem>
+                  <IconButton iconProps={{ iconName: "Completed" }} />
+                </StackItem>
+              </Stack>
+            </Stack>
           </StackItem>
         </Stack>
         {index === streamContentListItems.length - 1 ? (
@@ -139,12 +151,16 @@ export default function Feed({}: Props) {
         horizontalAlign="space-between"
         className="row-start-1 col-span-4 bg-white px-4"
       >
-        <Text className="text-lg font-bold">Feeds</Text>
-        <Link href="/settings" passHref>
-          <a>
-            <IconButton iconProps={{ iconName: "Settings" }} />
-          </a>
-        </Link>
+        <StackItem>
+          <Text className="text-lg font-bold">Feeds</Text>
+        </StackItem>
+        <StackItem>
+          <Link href="/settings" passHref>
+            <a>
+              <IconButton iconProps={{ iconName: "Settings" }} />
+            </a>
+          </Link>
+        </StackItem>
       </Stack>
       <Stack
         horizontal
@@ -158,11 +174,18 @@ export default function Feed({}: Props) {
         verticalAlign="center"
         className="row-start-1  col-span-13 bg-white px-4"
       >
-        {isAritleTitleShow && (
-          <Text className="text-lg font-bold block truncate">
-            {curArticle?.title}
-          </Text>
-        )}
+        <StackItem>
+          {isAritleTitleShow && (
+            <Text
+              className="text-lg font-bold block truncate cursor-pointer"
+              onClick={() =>
+                articleScrollContainerRef.current?.scrollTo({ top: 0 })
+              }
+            >
+              {curArticle?.title}
+            </Text>
+          )}
+        </StackItem>
       </Stack>
       <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar bg-white">
         <SourcesPanel />
@@ -189,7 +212,18 @@ export default function Feed({}: Props) {
                 onEnter={() => setIsAritleTitleShow(false)}
                 onLeave={() => setIsAritleTitleShow(true)}
               />
-              <Text className="text-gray-400 text-sm">{`${curArticle?.origin.title}/${curArticle?.published}`}</Text>
+              <Stack horizontal verticalAlign="center">
+                <StackItem grow>
+                  <Text className="text-gray-400 text-sm">{`${curArticle?.origin.title}/${curArticle?.published}`}</Text>
+                </StackItem>
+                <StackItem>
+                  <IconButton
+                    iconProps={{ iconName: "OpenInNewWindow" }}
+                    onClick={() => window.open(curArticle?.canonical[0].href)}
+                    title="在新标签页打开"
+                  />
+                </StackItem>
+              </Stack>
               <div
                 dangerouslySetInnerHTML={{
                   __html: curArticle?.summary.content ?? "",
