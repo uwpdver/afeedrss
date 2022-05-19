@@ -4,32 +4,26 @@ import { getAuthUri } from "./../../utils/auth";
 import { useRouter } from "next/router";
 import { StorageKeys } from "../../constants";
 import { PrimaryButton } from "@fluentui/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 interface Props {
   inoreaderAuthUri: string;
 }
 
 export default function Login({ inoreaderAuthUri }: Props) {
-  const router = useRouter();
+  const { data: session } = useSession();
   const handleLogin = async () => {
-    window.open(inoreaderAuthUri);
-    addEventListener(
-      "storage",
-      (e: StorageEvent) => {
-        if (e.key === StorageKeys.INOREADER_TOKEN) {
-          if (e.newValue !== "") {
-            router.replace("/feed");
-          }
-        }
-      },
-      { once: true }
-    );
+    if (session) {
+      signOut();
+    } else {
+      signIn();
+    }
   };
 
   return (
     <div>
       <PrimaryButton onClick={handleLogin} className="">
-        用 inoreader 账号登录
+        {session ? "退出登录" : "用 inoreader 账号登录"}
       </PrimaryButton>
     </div>
   );

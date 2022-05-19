@@ -1,6 +1,7 @@
 import axios from "axios";
 import { StorageKeys } from "../constants";
 import { inoreader } from "./inoreader";
+import { getSession } from "next-auth/react";
 
 const fetch = axios.create({
   baseURL: "/api/inoreader",
@@ -9,11 +10,10 @@ const fetch = axios.create({
 
 // 请求拦截器
 fetch.interceptors.request.use(
-  (config) => {
-    const inoreaderToken =
-      localStorage && localStorage.getItem(StorageKeys.INOREADER_TOKEN);
-    if (inoreaderToken && config.headers) {
-      config.headers.Authorization = `Bearer ${inoreaderToken}`;
+  async (config) => {
+    const session = await getSession();
+    if (session) {
+      config.headers!.Authorization = `Bearer ${session.accessToken}`;
     }
     return config;
   },
@@ -38,10 +38,7 @@ fetch.interceptors.response.use(
       error.response?.data ===
         "AppId required! Contact app developer. See https://inoreader.dev"
     ) {
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(StorageKeys.INOREADER_TOKEN);
-        window.location.reload();
-      }
+
     }
     return Promise.reject(error);
   }

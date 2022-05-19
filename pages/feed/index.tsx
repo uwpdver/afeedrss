@@ -12,13 +12,20 @@ import {
   Text,
 } from "@fluentui/react";
 import { Waypoint } from "react-waypoint";
+import { dehydrate, QueryClient } from "react-query";
 
-import { useStreamContent } from "./../../utils/useStreamContent";
+import {
+  fetchStreamContent,
+  useStreamContent,
+} from "./../../utils/useStreamContent";
 import { filterImgSrcfromHtmlStr } from "../../utils/filterImgSrcfromHtmlStr";
 import { StreamContentItem } from "../../server/inoreader";
 
 import StatusCard, { Status } from "../../components/statusCard";
 import SourcesPanel from "../../components/sourcePanel";
+import { GetServerSideProps } from "next";
+import { getSession, useSession } from "next-auth/react";
+import { getStreamContentQueryKey } from "../../utils/getStreamContentQueryKey";
 
 interface Props {}
 
@@ -31,9 +38,12 @@ const getQueryParma = (query: string | string[] | undefined) => {
 };
 
 export default function Feed({}: Props) {
+  const session = useSession();
   const router = useRouter();
   const articleId = getQueryParma(router.query.articleId) ?? "";
-  const streamId = getQueryParma(router.query.streamId) ?? "";
+  const streamId =
+    getQueryParma(router.query.streamId) ??
+    `user/1006201176/state/com.google/root`;
   const userId = getQueryParma(router.query.userId) || "";
   const unreadOnly = !!getQueryParma(router.query.unreadOnly);
 
@@ -236,3 +246,36 @@ export default function Feed({}: Props) {
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps<
+  any,
+  {
+    unreadOnly: string;
+    userId: string;
+    streamId: string;
+  }
+> = async (context) => {
+  const session = await getSession(context);
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/api/auth/signin",
+      },
+      props: {},
+    };
+  }
+  const userId = '1006201176';
+  const queryClient = new QueryClient();
+  const { query } = context;
+  const unreadOnly = !!getQueryParma(query.unreadOnly);
+  const streamId =
+    getQueryParma(query.streamId) ||
+    `user/${userId}/state/com.google/root`;
+  const queryKey = getStreamContentQueryKey({ unreadOnly, userId, streamId });
+  await queryClient.prefetchQuery(queryKey, fetchStreamContent);
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
+  };
+};
