@@ -37,11 +37,14 @@ export default NextAuth({
       }
       return token;
     },
-    async session({ session, token, user }) {
-      console.log();
+    async session({ session, token }) {
       // Send properties to the client, like an access_token from a provider.
-      session.accessToken = token.accessToken;
-      session.id = user.id;
+      session.accessToken = token.accessToken as string;
+      session.user = {
+        id: token.sub ,
+        name: token.name,
+        email: token.email,
+      };
       return session;
     },
   },

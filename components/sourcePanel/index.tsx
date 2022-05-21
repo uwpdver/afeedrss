@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement, useMemo } from "react";
 import {
   Stack,
   Text,
@@ -10,16 +10,10 @@ import {
 } from "@fluentui/react";
 import { useRouter } from "next/router";
 import { FolderEntity, InoreaderTag } from "../../types";
-import {
-  SystemStreamIDs,
-  StreamPreferenceListResponse,
-} from "../../server/inoreader";
+import { StreamPreferenceListResponse } from "../../server/inoreader";
 import server from "../../server";
-import { useQuery, useQueryClient } from "react-query";
-import {
-  getNavLinkGroupProps,
-  createBuildInNavLink,
-} from "../../utils/sources";
+import { useQuery } from "react-query";
+import SubscriptionNavTreeBuilder from "../../utils/subscriptionNavTreeBuilder";
 import { normalize, NormalizedSchema, schema } from "normalizr";
 import { Subscription, SubscriptionEntity } from "../../types";
 import qs from "query-string";
@@ -28,14 +22,13 @@ const folder = new schema.Entity("folder");
 const subscription = new schema.Entity("subscription", undefined);
 
 export interface Props {
+  userId?: string;
   className?: string;
 }
 
-const SourcesPanel = ({ className }: Props) => {
+const SourcesPanel = ({ className, userId }: Props) => {
   const router = useRouter();
   const isIconDisplay = true;
-
-  const userId = "1006201176";
 
   const onRenderLink: IRenderFunction<INavLink> = (props, defaultRender) => {
     if (!props) {
@@ -74,7 +67,7 @@ const SourcesPanel = ({ className }: Props) => {
           {props.name}
         </Text>
         {props.type !== "feed" && props.unreadCount !== 0 ? (
-          <span>{props.unreadCount}</span>
+          <span className="text-sm text-gray-400">{props.unreadCount}</span>
         ) : null}
       </Stack>
     );
@@ -125,9 +118,23 @@ const SourcesPanel = ({ className }: Props) => {
   const subscriptionsListData = subscriptionsListQuery.data;
   const folderData = folderQuery.data;
   const streamPreferencesData = streamPreferencesQuery.data;
-  if (!subscriptionsListData || !folderData || !streamPreferencesData) {
-    return null;
-  }
+
+  const groups = useMemo(() => {
+    if (
+      !userId ||
+      !subscriptionsListData ||
+      !folderData ||
+      !streamPreferencesData
+    ) {
+      return null;
+    }
+    return new SubscriptionNavTreeBuilder({
+      userId,
+      subscriptionById: subscriptionsListData.entities.subscription,
+      tagsById: folderData.entities.folder,
+      streamPrefById: streamPreferencesData.streamprefs,
+    }).build();
+  }, [userId, subscriptionsListData, folderData, streamPreferencesData]);
 
   const handleLinkClick = (
     e?: React.MouseEvent<HTMLElement>,
@@ -138,39 +145,14 @@ const SourcesPanel = ({ className }: Props) => {
     router.push(`/feed?${query}`);
   };
 
-  const allArticleStreamId = `user/${userId}/state/com.google/root`;
-
-  let group = getNavLinkGroupProps(allArticleStreamId, {
-    subscriptionById: subscriptionsListData.entities.subscription,
-    tagsById: folderData.entities.folder,
-    streamPrefById: streamPreferencesData.streamprefs,
-  });
-
-  if (group) {
-    const allLink = createBuildInNavLink({
-      id: allArticleStreamId,
-      name: "all article",
-      iconName: "PreviewLink",
-    });
-
-    const favLink = createBuildInNavLink({
-      id: SystemStreamIDs.STARRED,
-      name: "stared article",
-      iconName: "FavoriteStar",
-    });
-
-    group.links.unshift(allLink, favLink);
-  }
-
   return (
     <Stack className={`${className} min-h-0`}>
       <Nav
         styles={{
-          chevronButton: "",
-          link: "pl-8 pr-6",
-          compositeLink: "",
+          chevronButton: "left-auto right-4",
+          link: "pl-4 pr-12",
         }}
-        groups={group ? [group] : null}
+        groups={groups}
         onRenderLink={onRenderLink}
         onLinkClick={handleLinkClick}
         onRenderGroupHeader={() => null}

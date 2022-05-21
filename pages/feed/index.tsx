@@ -26,6 +26,7 @@ import SourcesPanel from "../../components/sourcePanel";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { getStreamContentQueryKey } from "../../utils/getStreamContentQueryKey";
+import { getRootStreamId } from "../../utils/getRootSteamId";
 
 interface Props {}
 
@@ -38,13 +39,12 @@ const getQueryParma = (query: string | string[] | undefined) => {
 };
 
 export default function Feed({}: Props) {
-  const session = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
   const articleId = getQueryParma(router.query.articleId) ?? "";
+  const userId = session?.user?.id || "";
   const streamId =
-    getQueryParma(router.query.streamId) ??
-    `user/1006201176/state/com.google/root`;
-  const userId = getQueryParma(router.query.userId) || "";
+    getQueryParma(router.query.streamId) ?? getRootStreamId(userId);
   const unreadOnly = !!getQueryParma(router.query.unreadOnly);
 
   const [curArticle, setCurArticle] = useState<StreamContentItem | null>(null);
@@ -150,7 +150,7 @@ export default function Feed({}: Props) {
 
   return (
     <div
-      className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100"
+      className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100 divide-x"
       style={{
         gridTemplateRows: `48px auto`,
       }}
@@ -198,7 +198,7 @@ export default function Feed({}: Props) {
         </StackItem>
       </Stack>
       <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar bg-white">
-        <SourcesPanel />
+        <SourcesPanel userId={userId} />
       </div>
       <div
         className="row-start-2 col-span-7 overflow-y-scroll scrollbar bg-gray-50"
@@ -264,13 +264,11 @@ export const getServerSideProps: GetServerSideProps<
       props: {},
     };
   }
-  const userId = '1006201176';
+  const userId = session.user?.id || "";
   const queryClient = new QueryClient();
   const { query } = context;
   const unreadOnly = !!getQueryParma(query.unreadOnly);
-  const streamId =
-    getQueryParma(query.streamId) ||
-    `user/${userId}/state/com.google/root`;
+  const streamId = getQueryParma(query.streamId) || getRootStreamId(userId);
   const queryKey = getStreamContentQueryKey({ unreadOnly, userId, streamId });
   await queryClient.prefetchQuery(queryKey, fetchStreamContent);
   return {
