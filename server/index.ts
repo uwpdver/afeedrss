@@ -1,10 +1,9 @@
 import axios from "axios";
-import { StorageKeys } from "../constants";
 import { inoreader } from "./inoreader";
 import { getSession } from "next-auth/react";
 
 const fetch = axios.create({
-  baseURL: "/api/inoreader",
+  baseURL: process.env.INOREADER_SERVER_URL || "/api/inoreader",
   timeout: 60 * 60 * 1000,
 });
 

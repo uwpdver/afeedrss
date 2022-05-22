@@ -12,12 +12,8 @@ import {
   Text,
 } from "@fluentui/react";
 import { Waypoint } from "react-waypoint";
-import { dehydrate, QueryClient } from "react-query";
 
-import {
-  fetchStreamContent,
-  useStreamContent,
-} from "./../../utils/useStreamContent";
+import { useStreamContent } from "./../../utils/useStreamContent";
 import { filterImgSrcfromHtmlStr } from "../../utils/filterImgSrcfromHtmlStr";
 import { StreamContentItem } from "../../server/inoreader";
 
@@ -25,7 +21,6 @@ import StatusCard, { Status } from "../../components/statusCard";
 import SourcesPanel from "../../components/sourcePanel";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
-import { getStreamContentQueryKey } from "../../utils/getStreamContentQueryKey";
 import { getRootStreamId } from "../../utils/getRootSteamId";
 
 interface Props {}
@@ -264,16 +259,8 @@ export const getServerSideProps: GetServerSideProps<
       props: {},
     };
   }
-  const userId = session.user?.id || "";
-  const queryClient = new QueryClient();
-  const { query } = context;
-  const unreadOnly = !!getQueryParma(query.unreadOnly);
-  const streamId = getQueryParma(query.streamId) || getRootStreamId(userId);
-  const queryKey = getStreamContentQueryKey({ unreadOnly, userId, streamId });
-  await queryClient.prefetchQuery(queryKey, fetchStreamContent);
+
   return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
-    },
+    props: {},
   };
 };

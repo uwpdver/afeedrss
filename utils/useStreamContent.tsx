@@ -71,8 +71,6 @@ export function useStreamContent({
     streamId,
   });
 
-  const queryClient = useQueryClient();
-
   // 从服务器获取 feed 流，并且将响应数据转换成组件的状态，将数据范式化
   const streamContentQuery = useInfiniteQuery(
     streamContentQueryKey,
