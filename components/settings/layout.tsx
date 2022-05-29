@@ -17,7 +17,7 @@ export default function SettingsLayout({ title, children }: Props) {
       }}
     >
       <div className="flex items-center col-span-4 space-x-4">
-        <Link href="/feed" passHref>
+        <Link href="/" passHref>
           <a>
             <IconButton iconProps={{ iconName: "ChevronLeft" }} />
           </a>
@@ -30,7 +30,7 @@ export default function SettingsLayout({ title, children }: Props) {
       <div className="flex items-center col-span-14 bg-white px-4">
         <Text className="font-bold">{title}</Text>
       </div>
-      <div className="row-start-2 col-span-14 bg-white">{children}</div>
+      <div className="row-start-2 col-span-14 bg-white px-4">{children}</div>
     </div>
   );
 }

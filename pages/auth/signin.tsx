@@ -23,7 +23,7 @@ export default function SignIn({ providers }: Props) {
         Object.values(providers).map((provider) => (
           <div key={provider.name}>
             <PrimaryButton
-              onClick={() => signIn(provider.id, { callbackUrl: "/feed" })}
+              onClick={() => signIn(provider.id, { callbackUrl: "/" })}
             >
               {`登录 ${provider.name} 账号`}
             </PrimaryButton>

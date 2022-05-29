@@ -60,17 +60,7 @@ export async function fetchStreamContent({
   return res.data;
 }
 
-export function useStreamContent({
-  unreadOnly,
-  userId,
-  streamId,
-}: StreamContentQueryKeyParmas) {
-  const streamContentQueryKey = getStreamContentQueryKey({
-    unreadOnly,
-    userId,
-    streamId,
-  });
-
+export function useStreamContent(streamContentQueryKey: unknown[]) {
   // 从服务器获取 feed 流，并且将响应数据转换成组件的状态，将数据范式化
   const streamContentQuery = useInfiniteQuery(
     streamContentQueryKey,

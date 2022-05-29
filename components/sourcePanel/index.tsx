@@ -142,7 +142,7 @@ const SourcesPanel = ({ className, userId }: Props) => {
   ) => {
     e?.preventDefault();
     const query = qs.stringify({ ...router.query, streamId: item?.key });
-    router.push(`/feed?${query}`);
+    router.push(`/?${query}`);
   };
 
   return (
