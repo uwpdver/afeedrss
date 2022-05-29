@@ -16,33 +16,20 @@ export default function SettingsLayout({ title, children }: Props) {
         gridTemplateRows: `48px auto`,
       }}
     >
-      <Stack
-        className="col-span-4"
-        horizontal
-        verticalAlign="center"
-        tokens={{ childrenGap: 8 }}
-      >
-        <StackItem>
-          <Link href="/feed" passHref>
-            <a>
-              <IconButton iconProps={{ iconName: "ChevronLeft" }} />
-            </a>
-          </Link>
-        </StackItem>
-        <StackItem>
-          <Text className="font-bold">设置</Text>
-        </StackItem>
-      </Stack>
+      <div className="flex items-center col-span-4 space-x-4">
+        <Link href="/feed" passHref>
+          <a>
+            <IconButton iconProps={{ iconName: "ChevronLeft" }} />
+          </a>
+        </Link>
+        <Text className="font-bold">设置</Text>
+      </div>
       <div className="row-start-2 col-span-4">
         <Nav />
       </div>
-      <Stack
-        className="col-span-14 bg-white px-4 flex"
-        horizontal
-        verticalAlign="center"
-      >
+      <div className="flex items-center col-span-14 bg-white px-4">
         <Text className="font-bold">{title}</Text>
-      </Stack>
+      </div>
       <div className="row-start-2 col-span-14 bg-white">{children}</div>
     </div>
   );
