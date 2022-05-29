@@ -12,16 +12,24 @@ import {
   Text,
 } from "@fluentui/react";
 import { Waypoint } from "react-waypoint";
+import { produce } from "immer";
 
 import { useStreamContent } from "./../../utils/useStreamContent";
 import { filterImgSrcfromHtmlStr } from "../../utils/filterImgSrcfromHtmlStr";
-import { StreamContentItem } from "../../server/inoreader";
+import {
+  StreamContentItem,
+  StreamContentItemWithPageIndex,
+  StreamContentsResponse,
+} from "../../server/inoreader";
 
 import StatusCard, { Status } from "../../components/statusCard";
 import SourcesPanel from "../../components/sourcePanel";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { getRootStreamId } from "../../utils/getRootSteamId";
+import server from "../../server";
+import { InfiniteData, useQueryClient } from "react-query";
+import { getStreamContentQueryKey } from "../../utils/getStreamContentQueryKey";
 
 interface Props {}
 
@@ -37,6 +45,7 @@ export default function Feed({}: Props) {
   const { data: session } = useSession();
   const router = useRouter();
   const articleId = getQueryParma(router.query.articleId) ?? "";
+  const queryClient = useQueryClient();
   const userId = session?.user?.id || "";
   const streamId =
     getQueryParma(router.query.streamId) ?? getRootStreamId(userId);
@@ -44,6 +53,11 @@ export default function Feed({}: Props) {
 
   const [curArticle, setCurArticle] = useState<StreamContentItem | null>(null);
   const [isAritleTitleShow, setIsAritleTitleShow] = useState(false);
+  const streamContentQueryKey = getStreamContentQueryKey({
+    unreadOnly,
+    userId,
+    streamId,
+  });
   const streamContentQuery = useStreamContent({
     unreadOnly,
     userId,
@@ -52,12 +66,16 @@ export default function Feed({}: Props) {
   const articleScrollContainerRef = useRef<HTMLDivElement>(null);
 
   const streamContentListItems = useMemo(() => {
-    const initList: StreamContentItem[] = [];
+    const initList: StreamContentItemWithPageIndex[] = [];
     if (!streamContentQuery.data || !streamContentQuery.data.pages) {
       return initList;
     }
     const { pages } = streamContentQuery.data;
-    const items = pages.reduce((acc, cur) => acc.concat(cur.items), initList);
+    const items = pages.reduce(
+      (acc, cur, idx) =>
+        acc.concat(cur.items.map((item) => ({ ...item, pageIndex: idx }))),
+      initList
+    );
     return items;
   }, [streamContentQuery.data]);
 
@@ -73,14 +91,36 @@ export default function Feed({}: Props) {
     }
   };
 
+  const markAsRead = async (target: StreamContentItemWithPageIndex) => {
+    try {
+      queryClient.setQueryData(
+        streamContentQueryKey,
+        produce<InfiniteData<StreamContentsResponse>>((draft) => {
+          const { items } = draft.pages[target.pageIndex];
+          const draftTarget = items.find(({ id }) => id === target.id);
+          if (draftTarget) {
+            draftTarget!.isRead = !target.isRead;
+          }
+        })
+      );
+      await server.inoreader.markArticleAsRead(target.id, target.isRead);
+    } catch (error) {}
+  };
+
   const onRenderCell = (
-    item?: StreamContentItem,
+    item?: StreamContentItemWithPageIndex,
     index?: number
   ): React.ReactNode => {
     if (!item) return null;
     const { title } = item;
+
+    const onRead = () => markAsRead(item);
+
     const onClickTitle = () => {
       setCurArticle(item);
+      if(!item.isRead){
+        markAsRead(item);
+      }
     };
 
     return (
@@ -89,7 +129,7 @@ export default function Feed({}: Props) {
           horizontal
           data-is-focusable={true}
           tokens={{ childrenGap: 16 }}
-          className="mb-3 p-3"
+          className={`mb-3 p-3 ${item?.isRead ? "opacity-30" : ""}`}
         >
           <StackItem shrink>
             <Image
@@ -113,7 +153,12 @@ export default function Feed({}: Props) {
                   </Text>
                 </StackItem>
                 <StackItem>
-                  <IconButton iconProps={{ iconName: "Completed" }} />
+                  <IconButton
+                    iconProps={{
+                      iconName: item.isRead ? "CompletedSolid" : "Completed",
+                    }}
+                    onClick={onRead}
+                  />
                 </StackItem>
               </Stack>
             </Stack>
@@ -150,48 +195,29 @@ export default function Feed({}: Props) {
         gridTemplateRows: `48px auto`,
       }}
     >
-      <Stack
-        horizontal
-        verticalAlign="center"
-        horizontalAlign="space-between"
-        className="row-start-1 col-span-4 bg-white px-4"
-      >
-        <StackItem>
-          <Text className="text-lg font-bold">Feeds</Text>
-        </StackItem>
-        <StackItem>
-          <Link href="/settings" passHref>
-            <a>
-              <IconButton iconProps={{ iconName: "Settings" }} />
-            </a>
-          </Link>
-        </StackItem>
-      </Stack>
-      <Stack
-        horizontal
-        verticalAlign="center"
-        className="row-start-1 col-span-7 bg-gray-50 px-4"
-      >
+      <div className="flex items-center justify-between row-start-1 col-span-4 bg-white px-4">
+        <Text className="text-lg font-bold">Feeds</Text>
+        <Link href="/settings" passHref>
+          <a>
+            <IconButton iconProps={{ iconName: "Settings" }} />
+          </a>
+        </Link>
+      </div>
+      <div className="flex items-center row-start-1 col-span-7 bg-gray-50 px-4">
         <Text className="text-lg font-bold">未读文章</Text>
-      </Stack>
-      <Stack
-        horizontal
-        verticalAlign="center"
-        className="row-start-1  col-span-13 bg-white px-4"
-      >
-        <StackItem>
-          {isAritleTitleShow && (
-            <Text
-              className="text-lg font-bold block truncate cursor-pointer"
-              onClick={() =>
-                articleScrollContainerRef.current?.scrollTo({ top: 0 })
-              }
-            >
-              {curArticle?.title}
-            </Text>
-          )}
-        </StackItem>
-      </Stack>
+      </div>
+      <div className="flex items-center row-start-1 col-span-13 bg-white px-4">
+        {isAritleTitleShow && (
+          <Text
+            className="text-lg font-bold block truncate cursor-pointer"
+            onClick={() =>
+              articleScrollContainerRef.current?.scrollTo({ top: 0 })
+            }
+          >
+            {curArticle?.title}
+          </Text>
+        )}
+      </div>
       <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar bg-white">
         <SourcesPanel userId={userId} />
       </div>

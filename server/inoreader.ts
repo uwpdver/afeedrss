@@ -37,6 +37,11 @@ export interface StreamContentItem {
   timestampUsec: string;
   title: string;
   updated: number;
+  isRead?: boolean;
+}
+
+export interface StreamContentItemWithPageIndex extends StreamContentItem {
+  pageIndex: number;
 }
 
 export interface StreamContentsResponse {
