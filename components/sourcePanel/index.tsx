@@ -161,4 +161,4 @@ const SourcesPanel = ({ className, userId }: Props) => {
   );
 };
 
-export default SourcesPanel;
+export default React.memo(SourcesPanel);

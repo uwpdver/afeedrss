@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import {
@@ -49,9 +55,11 @@ export default function Home({}: Props) {
   const { data: session } = useSession();
   const userId = session?.user?.id || "";
   const router = useRouter();
+  const [unreadOnly, setUnreadOnly] = useState(() => {
+    return !!getQueryParma(router.query.unreadOnly);
+  });
   const streamId =
     getQueryParma(router.query.streamId) ?? getRootStreamId(userId);
-  const unreadOnly = !!getQueryParma(router.query.unreadOnly);
 
   const streamContentQueryKey = getStreamContentQueryKey({
     unreadOnly,
@@ -83,91 +91,100 @@ export default function Home({}: Props) {
     }
   }, [curArticle?.id]);
 
-  const onEnterWaypoint = () => {
+  const onEnterWaypoint = useCallback(() => {
     if (streamContentQuery.hasNextPage) {
       streamContentQuery.fetchNextPage();
     }
-  };
+  }, [streamContentQuery]);
 
-  const markAsRead = async (target: StreamContentItemWithPageIndex) => {
-    try {
-      queryClient.setQueryData(
-        streamContentQueryKey,
-        produce<InfiniteData<StreamContentsResponse>>((draft) => {
-          const { items } = draft.pages[target.pageIndex];
-          const draftTarget = items.find(({ id }) => id === target.id);
-          if (draftTarget) {
-            draftTarget!.isRead = !target.isRead;
-          }
-        })
-      );
-      await server.inoreader.markArticleAsRead(target.id, target.isRead);
-    } catch (error) {}
-  };
+  const markAsRead = useCallback(
+    async (target: StreamContentItemWithPageIndex) => {
+      try {
+        queryClient.setQueryData(
+          streamContentQueryKey,
+          produce<InfiniteData<StreamContentsResponse>>((draft) => {
+            const { items } = draft.pages[target.pageIndex];
+            const draftTarget = items.find(({ id }) => id === target.id);
+            if (draftTarget) {
+              draftTarget!.isRead = !target.isRead;
+            }
+          })
+        );
+        await server.inoreader.markArticleAsRead(target.id, target.isRead);
+      } catch (error) {}
+    },
+    [queryClient, streamContentQueryKey]
+  );
 
-  const onRenderCell = (
-    item?: StreamContentItemWithPageIndex,
-    index?: number
-  ): React.ReactNode => {
-    if (!item) return null;
-    const { title } = item;
+  const onRenderCell = useCallback(
+    (
+      item?: StreamContentItemWithPageIndex,
+      index?: number
+    ): React.ReactNode => {
+      if (!item) return null;
+      const { title } = item;
 
-    const onRead = () => markAsRead(item);
-
-    const onClickTitle = () => {
-      setCurArticle(item);
-      if (!item.isRead) {
+      const isSelected = curArticle?.id === item.id;
+      const onRead: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.stopPropagation();
         markAsRead(item);
-      }
-    };
+      };
 
-    const isSelected = curArticle?.id === item.id;
+      const onClickTitle = () => {
+        setCurArticle(item);
+        if (!item.isRead) {
+          markAsRead(item);
+        }
+      };
 
-    return (
-      <>
-        <div
-          data-is-focusable={true}
-          className={`flex space-x-4 mb-3 p-3 rounded-lg ${
-            !isSelected && item?.isRead ? "opacity-30" : ""
-          } ${isSelected ? "ring-2 ring-inset bg-white" : ""}`}
-        >
-          <div className="shrink-0">
-            <Image
-              src={filterImgSrcfromHtmlStr(item.summary.content)}
-              width={80}
-              height={80}
-              imageFit={ImageFit.cover}
-              className="bg-gray-300 rounded-md"
-              alt=""
-            />
-          </div>
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1">
-              <Text onClick={onClickTitle} className="cursor-pointer" block>
-                {title}
-              </Text>
+      return (
+        <>
+          <div
+            data-is-focusable={true}
+            className={`flex space-x-4 mb-3 p-3 rounded-lg cursor-pointer hover:bg-blue-100 transition ${
+              !isSelected && item?.isRead ? "opacity-30" : ""
+            } ${isSelected ? "ring-2 ring-inset bg-white" : ""}`}
+            onClick={onClickTitle}
+          >
+            <div className="shrink-0">
+              <Image
+                src={filterImgSrcfromHtmlStr(item.summary.content)}
+                width={80}
+                height={80}
+                imageFit={ImageFit.cover}
+                className="bg-gray-300 rounded-md"
+                alt=""
+              />
             </div>
-            <div className="flex items-center">
-              <Text className="text-xs text-gray-400 flex-1">
-                {item.origin.title}
-              </Text>
-              <div className=" shrink-0">
-                <IconButton
-                  iconProps={{
-                    iconName: item.isRead ? "CompletedSolid" : "Completed",
-                  }}
-                  onClick={onRead}
-                />
+            <div className="flex-1 flex flex-col">
+              <div className="flex-1">
+                <Text className="cursor-pointer" block>
+                  {title}
+                </Text>
+              </div>
+              <div className="flex items-center">
+                <Text className="text-xs text-gray-400 flex-1">
+                  {item.origin.title}
+                </Text>
+                <div className=" shrink-0">
+                  <IconButton
+                    iconProps={{
+                      iconName: item.isRead ? "CompletedSolid" : "Completed",
+                    }}
+                    onClick={onRead}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        {index === streamContentListItems.length - 1 ? (
-          <Waypoint onEnter={onEnterWaypoint} />
-        ) : null}
-      </>
-    );
-  };
+          {index === streamContentListItems.length - 1 ? (
+            <Waypoint onEnter={onEnterWaypoint} />
+          ) : null}
+        </>
+      );
+    },
+    [curArticle?.id, markAsRead, onEnterWaypoint, streamContentListItems.length]
+  );
 
   const onRenderList = () => {
     if (streamContentQuery.isFetched) {
@@ -177,28 +194,29 @@ export default function Home({}: Props) {
         return <StatusCard status={Status.EMPTY} content="这里是空的" />;
       }
     }
+
     return (
       <List
         items={streamContentListItems}
         onRenderCell={onRenderCell}
         onShouldVirtualize={() => false}
         componentRef={listRef}
+        version={[onRenderCell]}
       />
     );
   };
 
   const onClickRefresh = () => {
     listRef.current?.scrollToIndex(0);
-    queryClient.refetchQueries(streamContentQueryKey)
+    queryClient.refetchQueries(streamContentQueryKey);
   };
 
-  return (
-    <div
-      className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100 divide-x"
-      style={{
-        gridTemplateRows: `48px auto`,
-      }}
-    >
+  const onClickFilter = () => {
+    setUnreadOnly((state) => !state);
+  };
+
+  const leftSideElem = (
+    <>
       <div className="flex items-center justify-between row-start-1 col-span-4 bg-white px-4">
         <Text className="text-lg font-bold">Feeds</Text>
         <Link href="/settings" passHref>
@@ -207,16 +225,47 @@ export default function Home({}: Props) {
           </a>
         </Link>
       </div>
+      <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar bg-white">
+        <SourcesPanel userId={userId} />
+      </div>
+    </>
+  );
+
+  const midElem = (
+    <>
       <div className="flex items-center row-start-1 col-span-7 bg-gray-50 px-4">
-        <Text className="text-lg font-bold">未读文章</Text>
+        <Text className="text-lg font-bold">
+          {unreadOnly ? "未读文章" : "全部文章"}
+        </Text>
+        <DefaultButton
+          toggle
+          checked={unreadOnly}
+          text={unreadOnly ? "全部" : "仅未读"}
+          iconProps={{ iconName: unreadOnly ? "FilterSolid" : "Filter" }}
+          onClick={onClickFilter}
+          className="ml-auto mr-2"
+        />
         <DefaultButton
           iconProps={{ iconName: "Refresh" }}
           onClick={onClickRefresh}
-          className="ml-auto mr-0"
-        >
-          刷新
-        </DefaultButton>
+          className=""
+          text="刷新"
+        />
       </div>
+      <div
+        className="row-start-2 col-span-7 overflow-y-scroll scrollbar bg-gray-50 px-2"
+        data-is-scrollable="true"
+      >
+        {onRenderList()}
+        <div className="flex justify-center w-full p-4">
+          {streamContentQuery.isFetching && <Spinner />}
+        </div>
+      </div>
+    </>
+  );
+
+  const rightSideElem = (
+    <>
       <div className="flex items-center row-start-1 col-span-13 bg-white px-4">
         {isAritleTitleShow && (
           <Text
@@ -228,18 +277,6 @@ export default function Home({}: Props) {
             {curArticle?.title}
           </Text>
         )}
-      </div>
-      <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar bg-white">
-        <SourcesPanel userId={userId} />
-      </div>
-      <div
-        className="row-start-2 col-span-7 overflow-y-scroll scrollbar bg-gray-50 px-2"
-        data-is-scrollable="true"
-      >
-        {onRenderList()}
-        <div className="flex justify-center w-full p-4">
-          {streamContentQuery.isFetching && <Spinner />}
-        </div>
       </div>
       <div className="row-start-2 col-span-13 bg-white relative">
         <div
@@ -275,6 +312,19 @@ export default function Home({}: Props) {
           ) : null}
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <div
+      className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100 divide-x"
+      style={{
+        gridTemplateRows: `48px auto`,
+      }}
+    >
+      {leftSideElem}
+      {midElem}
+      {rightSideElem}
     </div>
   );
 }
