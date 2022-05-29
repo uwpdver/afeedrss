@@ -33,11 +33,14 @@ fetch.interceptors.response.use(
   },
   (error) => {
     if (
+      error.response?.status === 403 ||
       error.response?.status === 401 ||
       error.response?.data ===
         "AppId required! Contact app developer. See https://inoreader.dev"
     ) {
-
+      if(typeof window !== 'undefined'){
+        window.location.pathname = '/auth/signin'
+      }
     }
     return Promise.reject(error);
   }

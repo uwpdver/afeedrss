@@ -254,7 +254,7 @@ export const getServerSideProps: GetServerSideProps<
   if (!session) {
     return {
       redirect: {
-        destination: "/api/auth/signin",
+        destination: "/auth/signin",
       },
       props: {},
     };
