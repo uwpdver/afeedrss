@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import Head from "next/head";
 import {
   IconButton,
   Spinner,
@@ -217,7 +218,7 @@ export default function Home({}: Props) {
 
   const leftSideElem = (
     <>
-      <div className="flex items-center justify-between row-start-1 col-span-4 bg-white px-4">
+      <div className="flex items-center justify-between row-start-1 col-span-4 px-4">
         <Text className="text-lg font-bold">Feeds</Text>
         <Link href="/settings" passHref>
           <a>
@@ -225,7 +226,7 @@ export default function Home({}: Props) {
           </a>
         </Link>
       </div>
-      <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar bg-white">
+      <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar">
         <SourcesPanel userId={userId} />
       </div>
     </>
@@ -233,7 +234,7 @@ export default function Home({}: Props) {
 
   const midElem = (
     <>
-      <div className="flex items-center row-start-1 col-span-7 bg-gray-50 px-4">
+      <div className="flex items-center row-start-1 col-span-7 px-4">
         <Text className="text-lg font-bold">
           {unreadOnly ? "未读文章" : "全部文章"}
         </Text>
@@ -253,7 +254,7 @@ export default function Home({}: Props) {
         />
       </div>
       <div
-        className="row-start-2 col-span-7 overflow-y-scroll scrollbar bg-gray-50 px-2"
+        className="row-start-2 col-span-7 overflow-y-scroll scrollbar px-2"
         data-is-scrollable="true"
       >
         {onRenderList()}
@@ -266,7 +267,7 @@ export default function Home({}: Props) {
 
   const rightSideElem = (
     <>
-      <div className="flex items-center row-start-1 col-span-13 bg-white px-4">
+      <div className="flex items-center row-start-1 col-span-13 px-4">
         {isAritleTitleShow && (
           <Text
             className="text-lg font-bold block truncate cursor-pointer"
@@ -278,7 +279,7 @@ export default function Home({}: Props) {
           </Text>
         )}
       </div>
-      <div className="row-start-2 col-span-13 bg-white relative">
+      <div className="row-start-2 col-span-13 relative">
         <div
           className="overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-400 w-full h-full absolute top-0 left-0"
           ref={articleScrollContainerRef}
@@ -316,16 +317,21 @@ export default function Home({}: Props) {
   );
 
   return (
-    <div
-      className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100 divide-x"
-      style={{
-        gridTemplateRows: `48px auto`,
-      }}
-    >
-      {leftSideElem}
-      {midElem}
-      {rightSideElem}
-    </div>
+    <>
+      <Head>
+        <title>RSS 阅读器</title>
+      </Head>
+      <div
+        className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100"
+        style={{
+          gridTemplateRows: `48px auto`,
+        }}
+      >
+        {leftSideElem}
+        {midElem}
+        {rightSideElem}
+      </div>
+    </>
   );
 }
 
