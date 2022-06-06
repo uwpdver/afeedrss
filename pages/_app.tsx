@@ -6,7 +6,7 @@ import { Hydrate, QueryClient, QueryClientProvider } from "react-query";
 import { initializeIcons } from "@fluentui/react/lib/Icons";
 import Helmet from 'react-helmet';
 
-initializeIcons(/* optional base url */);
+initializeIcons();
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const [queryClient] = React.useState(() => new QueryClient());
