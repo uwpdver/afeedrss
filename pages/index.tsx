@@ -23,16 +23,12 @@ import {
 import { Waypoint } from "react-waypoint";
 import { produce } from "immer";
 
-import {
-  useStreamContent,
-  fetchStreamContent,
-} from "../utils/useStreamContent";
+import { useStreamContent } from "../utils/useStreamContent";
 import { filterImgSrcfromHtmlStr } from "../utils/filterImgSrcfromHtmlStr";
 import {
   StreamContentItem,
   StreamContentItemWithPageIndex,
   StreamContentsResponse,
-  SystemStreamIDs,
 } from "../server/inoreader";
 
 import StatusCard, { Status } from "../components/statusCard";
@@ -41,12 +37,7 @@ import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { getRootStreamId } from "../utils/getRootSteamId";
 import server from "../server";
-import {
-  InfiniteData,
-  useQueryClient,
-  QueryClient,
-  dehydrate,
-} from "react-query";
+import { InfiniteData, useQueryClient } from "react-query";
 import { getStreamContentQueryKey } from "../utils/getStreamContentQueryKey";
 import { LAYOUT } from "../constants";
 
@@ -63,6 +54,7 @@ const getQueryParma = (query: string | string[] | undefined) => {
 export default function Home({}: Props) {
   const [curArticle, setCurArticle] = useState<StreamContentItem | null>(null);
   const [isArticlePanelOpen, setIsArticlePanelOpen] = useState(false);
+  const [isNavigationPanelOpen, setIsNavigationPanelOpen] = useState(false);
   const [isAritleTitleShow, setIsAritleTitleShow] = useState(false);
   const { data: session } = useSession();
   const userId = session?.user?.id || "";
@@ -229,48 +221,59 @@ export default function Home({}: Props) {
   };
 
   const leftSideElem = (
-    <Stack
-      grow
-      tokens={{ maxWidth: LAYOUT.NAVIGATION_WIDTH }}
-      className="hidden sm:flex"
-    >
+    <>
+      {isNavigationPanelOpen && (
+        <div
+          className="bg-black/40 fixed inset-0 z-20 cursor-pointer"
+          onClick={() => setIsNavigationPanelOpen(false)}
+          style={{ backdropFilter: "blur(10px)" }}
+        />
+      )}
       <Stack
-        disableShrink
-        className="px-4 py-4"
-        horizontal
-        verticalAlign="center"
-        horizontalAlign="space-between"
+        grow
+        tokens={{ maxWidth: LAYOUT.NAVIGATION_WIDTH }}
+        className={`absolute left-0 top-0 bottom-0 z-20 bg-gray-100 transition-transform sm:relative sm:translate-x-0 ${
+          isNavigationPanelOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        <StackItem disableShrink>
-          <Image
-            src=""
-            alt=""
-            className="w-12 h-12 rounded-full bg-gray-400 mr-4"
-          />
-        </StackItem>
-        <StackItem grow disableShrink>
-          <Text className="text-lg font-bold" block>
-            {session?.user?.name}
-          </Text>
-          <Text className="text-base text-gray-400">
-            {session?.user?.email}
-          </Text>
-        </StackItem>
-        <StackItem disableShrink>
-          <Link href="/settings" passHref>
-            <a>
-              <IconButton iconProps={{ iconName: "Settings" }} />
-            </a>
-          </Link>
-        </StackItem>
-      </Stack>
+        <Stack
+          disableShrink
+          className="px-4 py-4"
+          horizontal
+          verticalAlign="center"
+          horizontalAlign="space-between"
+        >
+          <StackItem disableShrink>
+            <Image
+              src=""
+              alt=""
+              className="w-12 h-12 rounded-full bg-gray-400 mr-4"
+            />
+          </StackItem>
+          <StackItem grow disableShrink>
+            <Text className="text-lg font-bold" block>
+              {session?.user?.name}
+            </Text>
+            <Text className="text-base text-gray-400">
+              {session?.user?.email}
+            </Text>
+          </StackItem>
+          <StackItem disableShrink>
+            <Link href="/settings" passHref>
+              <a>
+                <IconButton iconProps={{ iconName: "Settings" }} />
+              </a>
+            </Link>
+          </StackItem>
+        </Stack>
 
-      <Stack className="sticky top-0 overflow-y-hidden" grow>
-        <div className="overflow-y-scroll scrollbar flex-1">
-          <SourcesPanel userId={userId} />
-        </div>
+        <Stack className="sticky top-0 overflow-y-hidden" grow>
+          <div className="overflow-y-scroll scrollbar flex-1">
+            <SourcesPanel userId={userId} />
+          </div>
+        </Stack>
       </Stack>
-    </Stack>
+    </>
   );
 
   const midElem = (
@@ -282,6 +285,11 @@ export default function Home({}: Props) {
         verticalAlign="center"
         horizontalAlign="space-between"
       >
+        <IconButton
+          iconProps={{ iconName: "GlobalNavButton" }}
+          onClick={() => setIsNavigationPanelOpen(true)}
+          className="block sm:hidden mr-3"
+        />
         <Text className="text-lg font-bold mr-auto">
           {unreadOnly ? "未读文章" : "全部文章"}
         </Text>
@@ -395,7 +403,13 @@ export default function Home({}: Props) {
         className="relative h-screen overflow-hidden bg-gray-100"
       >
         {leftSideElem}
-        <Stack className="bg-gray-200" grow horizontalAlign="center">
+        <Stack
+          className={`bg-gray-200 transition-transform ${
+            isNavigationPanelOpen ? "scale-95" : "scale-none"
+          }`}
+          grow
+          horizontalAlign="center"
+        >
           <Stack className="w-full max-w-3xl bg-gray-50 relative h-full overflow-x-hidden">
             {midElem}
             {articlePaneElem}
@@ -423,40 +437,8 @@ export const getServerSideProps: GetServerSideProps<
       props: {},
     };
   }
-  const userId = session.user?.id;
-  if (!userId) {
-    return {
-      redirect: {
-        destination: "/auth/signin",
-      },
-      props: {},
-    };
-  }
-  const streamId =
-    getQueryParma(context.query.streamId) ?? getRootStreamId(userId);
-  const queryClient = new QueryClient();
-  const unreadOnly = !!getQueryParma(context.query.unreadOnly);
-  const streamContentQueryKey = getStreamContentQueryKey({
-    unreadOnly,
-    userId,
-    streamId,
-  });
-  console.log("session", session.accessToken);
-  await queryClient.prefetchQuery(
-    streamContentQueryKey,
-    async ({ queryKey, pageParam = "" }) => {
-      const exclude = !!unreadOnly ? SystemStreamIDs.READ : "";
-      const res = await server.inoreader.getStreamContents(String(streamId), {
-        exclude: exclude,
-        continuation: pageParam,
-      }, session.accessToken);
-      return res.data;
-    }
-  );
 
   return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
-    },
+    props: {},
   };
 };
