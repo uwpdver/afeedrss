@@ -20,6 +20,7 @@
     "lodash.keyby": "^4.6.0",
     "next": "12.1.5",
     "next-auth": "^4.3.4",
+    "next-pwa": "^5.5.4",
     "normalizr": "^3.6.2",
     "oauth": "^0.9.15",
     "query-string": "^7.1.1",

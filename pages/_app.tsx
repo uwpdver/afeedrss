@@ -2,7 +2,7 @@ import React from "react";
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
-import { Hydrate, QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "react-query";
 import { initializeIcons, ThemeProvider } from "@fluentui/react";
 import Helmet from "react-helmet";
 import { lightTheme, darkTheme } from "../theme";
@@ -20,11 +20,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         <meta name="referrer" content="no-referrer" />
       </Helmet>
       <QueryClientProvider client={queryClient}>
-        <Hydrate state={pageProps.dehydratedState}>
-          <ThemeProvider theme={theme}>
-            <Component {...pageProps} />
-          </ThemeProvider>
-        </Hydrate>
+        <ThemeProvider theme={theme}>
+          <Component {...pageProps} />
+        </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>
   );

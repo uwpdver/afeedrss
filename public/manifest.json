@@ -1,0 +1,32 @@
+{
+    "theme_color": "#016339",
+    "background_color": "#fbfbfb",
+    "display": "browser",
+    "scope": "/",
+    "start_url": "/",
+    "name": "RSS \u9605\u8bfb\u5668",
+    "short_name": "RSS \u9605\u8bfb\u5668",
+    "description": "\u8ffd\u8e2a\u548c\u9605\u8bfb\u6765\u81ea\u7f51\u7edc\u5404\u5904\u7684\u4fe1\u606f\u5728\u540c\u4e00\u4e2a\u5730\u65b9",
+    "icons": [
+        {
+            "src": "/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-256x256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-384x384.png",
+            "sizes": "384x384",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
