@@ -7,7 +7,7 @@ interface Props {}
 export default function Account({}: Props) {
   return (
     <SettingsLayout title="界面">
-      <DefaultButton>退出登录</DefaultButton>
+      
     </SettingsLayout>
   );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import { Text, Stack, StackItem, IconButton } from "@fluentui/react";
 import Link from "next/link";
 import Nav from "./nav";
+import { LAYOUT } from "../../constants";
 
 interface Props {
   title?: string;
@@ -10,27 +11,43 @@ interface Props {
 
 export default function SettingsLayout({ title, children }: Props) {
   return (
-    <div
-      className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100"
-      style={{
-        gridTemplateRows: `48px auto`,
-      }}
-    >
-      <div className="flex items-center col-span-4 space-x-4">
-        <Link href="/" passHref>
-          <a>
-            <IconButton iconProps={{ iconName: "ChevronLeft" }} />
-          </a>
-        </Link>
-        <Text className="font-bold">设置</Text>
-      </div>
-      <div className="row-start-2 col-span-4">
-        <Nav />
-      </div>
-      <div className="flex items-center col-span-14 bg-white px-4">
-        <Text className="font-bold">{title}</Text>
-      </div>
-      <div className="row-start-2 col-span-14 bg-white px-4">{children}</div>
-    </div>
+    <Stack className="relative h-screen overflow-hidden bg-gray-100" horizontal>
+      <Stack tokens={{ maxWidth: LAYOUT.NAVIGATION_WIDTH }} grow >
+        <Stack
+          className="space-x-2 p-4"
+          horizontal
+          verticalAlign="center"
+          disableShrink
+        >
+          <Link href="/" passHref>
+            <a>
+              <IconButton iconProps={{ iconName: "ChevronLeft" }} />
+            </a>
+          </Link>
+          <Text className="font-bold">设置</Text>
+        </Stack>
+
+        <StackItem className="overflow-y-hidden" grow>
+          <Nav />
+        </StackItem>
+      </Stack>
+      <Stack className="bg-gray-200" grow horizontalAlign="center">
+        <Stack className="w-full max-w-3xl bg-gray-50 relative h-full overflow-x-hidden">
+          <div>
+            <Stack
+              className="px-12 pt-16 pb-4"
+              horizontal
+              verticalAlign="center"
+              disableShrink
+            >
+              <Text className="font-bold">{title}</Text>
+            </Stack>
+            <Stack className="px-12" grow>
+              {children}
+            </Stack>
+          </div>
+        </Stack>
+      </Stack>
+    </Stack>
   );
 }

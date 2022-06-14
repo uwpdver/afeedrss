@@ -1,7 +1,7 @@
 import { IIconProps } from "@fluentui/react";
 
 export interface NavListItem {
-  name?: string;
+  name: string;
   iconProps?: IIconProps;
-  pathname?: string;
+  url: string;
 }

@@ -1,32 +1,54 @@
 import React from "react";
-import { Text, Stack, StackItem, Icon, List } from "@fluentui/react";
+import {
+  Text,
+  Stack,
+  StackItem,
+  Icon,
+  List,
+  Nav,
+  IRenderFunction,
+  INavLink,
+} from "@fluentui/react";
 import Link from "next/link";
 
 import { NavListItem } from "./types";
 import { NAV_LIST } from "./constants";
 
 export default function SettingsNav() {
-  const onRenderNavCell = (item?: NavListItem) => {
+  const onRenderLink: IRenderFunction<INavLink> = (props, defaultRender) => {
+    if (!props) {
+      return null;
+    }
+
     return (
-      <Link href={item?.pathname ?? ""} passHref={true}>
-        <a>
-          <Stack
-            horizontal
-            verticalAlign="center"
-            tokens={{ childrenGap: 8 }}
-            className="px-4 h-8 mb-2"
-          >
-            <StackItem shrink>
-              <Icon {...item?.iconProps} />
-            </StackItem>
-            <StackItem grow>
-              <Text>{item?.name}</Text>
-            </StackItem>
-          </Stack>
-        </a>
+      <Link href={props.url} passHref replace>
+        <Stack horizontal verticalAlign="center" className="w-full mx-2">
+          <Text block nowrap className="flex-1 text-left">
+            {props.name}
+          </Text>
+        </Stack>
       </Link>
     );
   };
 
-  return <List items={NAV_LIST} onRenderCell={onRenderNavCell} />;
+  const handleLinkClick = (
+    e?: React.MouseEvent<HTMLElement>,
+    item?: INavLink
+  ) => {
+    e?.preventDefault();
+  };
+
+  return (
+    <Nav
+      styles={{
+        root: "px-2",
+        chevronButton: "left-auto right-4",
+        link: "pl-4 pr-12",
+      }}
+      groups={[{ links: NAV_LIST }]}
+      onRenderLink={onRenderLink}
+      onLinkClick={handleLinkClick}
+      onRenderGroupHeader={() => null}
+    />
+  );
 }

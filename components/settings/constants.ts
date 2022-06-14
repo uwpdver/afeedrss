@@ -4,21 +4,21 @@ export const NAV_LIST: NavListItem[] = [
   {
     name: "账户",
     iconProps: { iconName: "Contact" },
-    pathname: "/settings/account",
+    url: "/settings/account",
   },
   {
     name: "界面",
     iconProps: { iconName: "RedEye" },
-    pathname: "/settings/interface",
+    url: "/settings/interface",
   },
   {
     name: "阅读偏好",
     iconProps: { iconName: "ReadingMode" },
-    pathname: "/settings/reading",
+    url: "/settings/reading",
   },
   {
     name: "关于",
     iconProps: { iconName: "Info" },
-    pathname: "/settings/about",
+    url: "/settings/about",
   },
 ];

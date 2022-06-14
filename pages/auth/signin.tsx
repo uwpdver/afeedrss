@@ -7,7 +7,8 @@ import {
 } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import { BuiltInProviderType } from "next-auth/providers";
-import { PrimaryButton } from "@fluentui/react";
+import Image from "next/image";
+import { Stack, DefaultButton, StackItem } from "@fluentui/react";
 
 interface Props {
   providers: Record<
@@ -18,18 +19,33 @@ interface Props {
 
 export default function SignIn({ providers }: Props) {
   return (
-    <div className="w-48 mx-auto mt-12">
-      {providers &&
-        Object.values(providers).map((provider) => (
-          <div key={provider.name}>
-            <PrimaryButton
-              onClick={() => signIn(provider.id, { callbackUrl: "/" })}
-            >
-              {`登录 ${provider.name} 账号`}
-            </PrimaryButton>
-          </div>
-        ))}
-    </div>
+    <Stack
+      className="w-screen min-h-screen bg-gray-100 "
+      horizontalAlign="center"
+      verticalAlign="center"
+    >
+      <Stack className="rounded-lg bg-gray-50 shadow-lg p-12" horizontalAlign="center">
+        <StackItem className="mb-4" disableShrink>
+          <Image
+            src="/images/3d-fluency-airplane-take-off.png"
+            width={200}
+            height={200}
+            alt=""
+            objectFit="contain"
+          />
+        </StackItem>
+        {providers &&
+          Object.values(providers).map((provider) => (
+            <div key={provider.name}>
+              <DefaultButton
+                onClick={() => signIn(provider.id, { callbackUrl: "/" })}
+              >
+                {`登录 ${provider.name} 账号`}
+              </DefaultButton>
+            </div>
+          ))}
+      </Stack>
+    </Stack>
   );
 }
 

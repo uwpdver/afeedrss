@@ -14,6 +14,9 @@ const createLink = (subscription: Subscription): INavLink => {
     url: "",
     type: "feed",
     iconUrl: subscription.iconUrl,
+    iconProps: {
+      iconName: "CircleRing",
+    },
   };
 };
 
@@ -32,6 +35,9 @@ export const createBuildInNavLink = ({
     url: "",
     type: "buildIn",
     iconName,
+    iconProps: {
+      iconName,
+    }
   };
 };
 
@@ -42,6 +48,9 @@ const createTagLink = (tag: Tag): INavLink => {
     url: "",
     type: "tag",
     iconName: "Tag",
+    iconProps: {
+      iconName: "Tag",
+    },
     unreadCount: tag.unread_count,
   };
 };
@@ -60,6 +69,9 @@ const createFolderLink = (
       url: "",
       type: "folder",
       iconName: "FolderHorizontal",
+      iconProps: {
+        iconName: "FolderHorizontal",
+      }
     };
   } else {
     const name = getTagNameFromId(tag.id);
@@ -70,6 +82,9 @@ const createFolderLink = (
       url: "",
       type: "folder",
       iconName: "FolderHorizontal",
+      iconProps: {
+        iconName: "FolderHorizontal",
+      },
       unreadCount: tag?.unread_count,
     };
   }

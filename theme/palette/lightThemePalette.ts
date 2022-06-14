@@ -1,0 +1,26 @@
+import { IPalette } from "@fluentui/theme";
+
+export const lightThemePalette: Partial<IPalette> = {
+  themePrimary: "#016339",
+  themeLighterAlt: "#fbfbfb",
+  themeLighter: "#f6f6f6",
+  themeLight: "#e5e5e5",
+  themeTertiary: "#989898",
+  themeSecondary: "#696969",
+  themeDarkAlt: "#4c4c4c",
+  themeDark: "#404040",
+  themeDarker: "#2f2f2f",
+  neutralLighterAlt: "#fbfbfb",
+  neutralLighter: "#f9f9f9",
+  neutralLight: "#f3f3f3",
+  neutralQuaternaryAlt: "#e5e5e5",
+  neutralQuaternary: "#cccccc",
+  neutralTertiaryAlt: "#cccccc",
+  neutralTertiary: "#101010",
+  neutralSecondary: "#202020",
+  neutralPrimaryAlt: "#2f2f2f",
+  neutralPrimary: "1b1b1b",
+  neutralDark: "#666666",
+  black: "#3a3a3a",
+  white: "#fbfbfb",
+};

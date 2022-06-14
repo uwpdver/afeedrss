@@ -23,12 +23,16 @@ import {
 import { Waypoint } from "react-waypoint";
 import { produce } from "immer";
 
-import { useStreamContent } from "../utils/useStreamContent";
+import {
+  useStreamContent,
+  fetchStreamContent,
+} from "../utils/useStreamContent";
 import { filterImgSrcfromHtmlStr } from "../utils/filterImgSrcfromHtmlStr";
 import {
   StreamContentItem,
   StreamContentItemWithPageIndex,
   StreamContentsResponse,
+  SystemStreamIDs,
 } from "../server/inoreader";
 
 import StatusCard, { Status } from "../components/statusCard";
@@ -37,8 +41,14 @@ import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { getRootStreamId } from "../utils/getRootSteamId";
 import server from "../server";
-import { InfiniteData, useQueryClient } from "react-query";
+import {
+  InfiniteData,
+  useQueryClient,
+  QueryClient,
+  dehydrate,
+} from "react-query";
 import { getStreamContentQueryKey } from "../utils/getStreamContentQueryKey";
+import { LAYOUT } from "../constants";
 
 interface Props {}
 
@@ -52,6 +62,7 @@ const getQueryParma = (query: string | string[] | undefined) => {
 
 export default function Home({}: Props) {
   const [curArticle, setCurArticle] = useState<StreamContentItem | null>(null);
+  const [isArticlePanelOpen, setIsArticlePanelOpen] = useState(false);
   const [isAritleTitleShow, setIsAritleTitleShow] = useState(false);
   const { data: session } = useSession();
   const userId = session?.user?.id || "";
@@ -133,6 +144,7 @@ export default function Home({}: Props) {
 
       const onClickTitle = () => {
         setCurArticle(item);
+        setIsArticlePanelOpen(true);
         if (!item.isRead) {
           markAsRead(item);
         }
@@ -142,9 +154,9 @@ export default function Home({}: Props) {
         <>
           <div
             data-is-focusable={true}
-            className={`flex space-x-4 mb-3 p-3 rounded-lg cursor-pointer hover:bg-blue-100 transition ${
+            className={`flex space-x-4 mb-3 p-3 rounded-lg cursor-pointer break-all hover:bg-blue-100 transition ${
               !isSelected && item?.isRead ? "opacity-30" : ""
-            } ${isSelected ? "ring-2 ring-inset bg-white" : ""}`}
+            } ${isSelected ? "ring-1 ring-inset bg-white" : ""}`}
             onClick={onClickTitle}
           >
             <div className="shrink-0">
@@ -217,25 +229,60 @@ export default function Home({}: Props) {
   };
 
   const leftSideElem = (
-    <>
-      <div className="flex items-center justify-between row-start-1 col-span-4 px-4">
-        <Text className="text-lg font-bold">Feeds</Text>
-        <Link href="/settings" passHref>
-          <a>
-            <IconButton iconProps={{ iconName: "Settings" }} />
-          </a>
-        </Link>
-      </div>
-      <div className="row-start-2 col-span-4 sticky top-0 overflow-y-scroll scrollbar">
-        <SourcesPanel userId={userId} />
-      </div>
-    </>
+    <Stack
+      grow
+      tokens={{ maxWidth: LAYOUT.NAVIGATION_WIDTH }}
+      className="hidden sm:flex"
+    >
+      <Stack
+        disableShrink
+        className="px-4 py-4"
+        horizontal
+        verticalAlign="center"
+        horizontalAlign="space-between"
+      >
+        <StackItem disableShrink>
+          <Image
+            src=""
+            alt=""
+            className="w-12 h-12 rounded-full bg-gray-400 mr-4"
+          />
+        </StackItem>
+        <StackItem grow disableShrink>
+          <Text className="text-lg font-bold" block>
+            {session?.user?.name}
+          </Text>
+          <Text className="text-base text-gray-400">
+            {session?.user?.email}
+          </Text>
+        </StackItem>
+        <StackItem disableShrink>
+          <Link href="/settings" passHref>
+            <a>
+              <IconButton iconProps={{ iconName: "Settings" }} />
+            </a>
+          </Link>
+        </StackItem>
+      </Stack>
+
+      <Stack className="sticky top-0 overflow-y-hidden" grow>
+        <div className="overflow-y-scroll scrollbar flex-1">
+          <SourcesPanel userId={userId} />
+        </div>
+      </Stack>
+    </Stack>
   );
 
   const midElem = (
-    <>
-      <div className="flex items-center row-start-1 col-span-7 px-4">
-        <Text className="text-lg font-bold">
+    <Stack className="overflow-y-scroll scrollbar bg-gray-50">
+      {/* head */}
+      <Stack
+        className="sticky -top-12 bg-inherit z-10 pt-16 pb-4 px-12"
+        horizontal
+        verticalAlign="center"
+        horizontalAlign="space-between"
+      >
+        <Text className="text-lg font-bold mr-auto">
           {unreadOnly ? "未读文章" : "全部文章"}
         </Text>
         <DefaultButton
@@ -252,36 +299,57 @@ export default function Home({}: Props) {
           className=""
           text="刷新"
         />
-      </div>
-      <div
-        className="row-start-2 col-span-7 overflow-y-scroll scrollbar px-2"
-        data-is-scrollable="true"
-      >
+      </Stack>
+
+      <div className="px-10" data-is-scrollable="true">
         {onRenderList()}
         <div className="flex justify-center w-full p-4">
           {streamContentQuery.isFetching && <Spinner />}
         </div>
       </div>
-    </>
+    </Stack>
   );
 
-  const rightSideElem = (
-    <>
-      <div className="flex items-center row-start-1 col-span-13 px-4">
-        {isAritleTitleShow && (
-          <Text
-            className="text-lg font-bold block truncate cursor-pointer"
-            onClick={() =>
-              articleScrollContainerRef.current?.scrollTo({ top: 0 })
-            }
-          >
-            {curArticle?.title}
-          </Text>
-        )}
-      </div>
-      <div className="row-start-2 col-span-13 relative">
+  const handleCloseArticle = () => {
+    setIsArticlePanelOpen(false);
+  };
+
+  const articlePaneElem = (
+    <Stack
+      className="absolute top-0 left-0 right-0 h-full z-10 bg-gray-50 transition-transform"
+      style={{
+        transform: isArticlePanelOpen ? "translateX(0)" : "translateX(100%)",
+      }}
+    >
+      <Stack
+        className="px-12 py-4"
+        horizontal
+        verticalAlign="center"
+        tokens={{ childrenGap: 12 }}
+      >
+        <StackItem className="overflow-hidden" grow>
+          {isAritleTitleShow && (
+            <Text
+              className="text-lg font-bold block truncate cursor-pointer"
+              onClick={() =>
+                articleScrollContainerRef.current?.scrollTo({ top: 0 })
+              }
+            >
+              {curArticle?.title}
+            </Text>
+          )}
+        </StackItem>
+        <StackItem className="ml-3 mr-0" disableShrink>
+          <IconButton
+            iconProps={{ iconName: "Cancel" }}
+            onClick={handleCloseArticle}
+          />
+        </StackItem>
+      </Stack>
+
+      <Stack className="relative" disableShrink grow>
         <div
-          className="overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-400 w-full h-full absolute top-0 left-0"
+          className="overflow-y-scroll scrollbar w-full h-full absolute top-0 left-0 px-12 "
           ref={articleScrollContainerRef}
         >
           {curArticle ? (
@@ -311,9 +379,10 @@ export default function Home({}: Props) {
               />
             </article>
           ) : null}
+          <hr className="mt-12 mb-16" />
         </div>
-      </div>
-    </>
+      </Stack>
+    </Stack>
   );
 
   return (
@@ -321,16 +390,18 @@ export default function Home({}: Props) {
       <Head>
         <title>RSS 阅读器</title>
       </Head>
-      <div
-        className="grid grid-cols-24 relative h-screen overflow-hidden bg-gray-100"
-        style={{
-          gridTemplateRows: `48px auto`,
-        }}
+      <Stack
+        horizontal
+        className="relative h-screen overflow-hidden bg-gray-100"
       >
         {leftSideElem}
-        {midElem}
-        {rightSideElem}
-      </div>
+        <Stack className="bg-gray-200" grow horizontalAlign="center">
+          <Stack className="w-full max-w-3xl bg-gray-50 relative h-full overflow-x-hidden">
+            {midElem}
+            {articlePaneElem}
+          </Stack>
+        </Stack>
+      </Stack>
     </>
   );
 }
@@ -352,8 +423,40 @@ export const getServerSideProps: GetServerSideProps<
       props: {},
     };
   }
+  const userId = session.user?.id;
+  if (!userId) {
+    return {
+      redirect: {
+        destination: "/auth/signin",
+      },
+      props: {},
+    };
+  }
+  const streamId =
+    getQueryParma(context.query.streamId) ?? getRootStreamId(userId);
+  const queryClient = new QueryClient();
+  const unreadOnly = !!getQueryParma(context.query.unreadOnly);
+  const streamContentQueryKey = getStreamContentQueryKey({
+    unreadOnly,
+    userId,
+    streamId,
+  });
+  console.log("session", session.accessToken);
+  await queryClient.prefetchQuery(
+    streamContentQueryKey,
+    async ({ queryKey, pageParam = "" }) => {
+      const exclude = !!unreadOnly ? SystemStreamIDs.READ : "";
+      const res = await server.inoreader.getStreamContents(String(streamId), {
+        exclude: exclude,
+        continuation: pageParam,
+      }, session.accessToken);
+      return res.data;
+    }
+  );
 
   return {
-    props: {},
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
   };
 };

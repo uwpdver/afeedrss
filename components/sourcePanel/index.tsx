@@ -1,14 +1,7 @@
-import React, { ReactElement, useMemo } from "react";
-import {
-  Stack,
-  Text,
-  Image,
-  INavLink,
-  Nav,
-  IRenderFunction,
-  Icon,
-} from "@fluentui/react";
+import React, { useMemo } from "react";
+import { Stack, Text, INavLink, Nav, IRenderFunction } from "@fluentui/react";
 import { useRouter } from "next/router";
+import qs from "query-string";
 import { FolderEntity, InoreaderTag } from "../../types";
 import { StreamPreferenceListResponse } from "../../server/inoreader";
 import server from "../../server";
@@ -16,7 +9,6 @@ import { useQuery } from "react-query";
 import SubscriptionNavTreeBuilder from "../../utils/subscriptionNavTreeBuilder";
 import { normalize, NormalizedSchema, schema } from "normalizr";
 import { Subscription, SubscriptionEntity } from "../../types";
-import qs from "query-string";
 
 const folder = new schema.Entity("folder");
 const subscription = new schema.Entity("subscription", undefined);
@@ -28,41 +20,14 @@ export interface Props {
 
 const SourcesPanel = ({ className, userId }: Props) => {
   const router = useRouter();
-  const isIconDisplay = true;
 
   const onRenderLink: IRenderFunction<INavLink> = (props, defaultRender) => {
     if (!props) {
       return null;
     }
 
-    const iconRender = (): ReactElement | null => {
-      if (props.type === "feed") {
-        if (isIconDisplay && props.iconUrl) {
-          return (
-            <div className="mr-2 w-6 text-center">
-              <div className="w-4 h-4 mx-auto relative">
-                <Image src={props.iconUrl} alt="" />
-              </div>
-            </div>
-          );
-        } else {
-          return (
-            <Icon
-              iconName={props.iconName}
-              className="mr-2 w-6 h-6 leading-6"
-            />
-          );
-        }
-      }
-
-      return (
-        <Icon iconName={props.iconName} className="mr-2 w-6 h-6 leading-6" />
-      );
-    };
-
     return (
-      <Stack horizontal verticalAlign="center" className="w-full">
-        {iconRender()}
+      <Stack horizontal verticalAlign="center" className="w-full mx-2">
         <Text block nowrap className="flex-1 text-left">
           {props.name}
         </Text>
@@ -149,6 +114,7 @@ const SourcesPanel = ({ className, userId }: Props) => {
     <Stack className={`${className} min-h-0`}>
       <Nav
         styles={{
+          root: "px-2",
           chevronButton: "left-auto right-4",
           link: "pl-4 pr-12",
         }}
