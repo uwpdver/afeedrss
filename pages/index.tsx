@@ -292,37 +292,41 @@ export default function Home({}: Props) {
   const midElem = (
     <Stack className="overflow-y-scroll scrollbar bg-gray-50">
       {/* head */}
-      <Stack
-        className="sticky -top-12 bg-inherit z-10 pt-16 pb-4 px-12"
-        horizontal
-        verticalAlign="center"
-        horizontalAlign="space-between"
-      >
-        <IconButton
-          iconProps={{ iconName: "GlobalNavButton" }}
-          onClick={() => setIsNavigationPanelOpen(true)}
-          className="block sm:hidden mr-3"
-        />
-        <Text className="text-lg font-bold mr-auto">
-          {unreadOnly ? "未读文章" : "全部文章"}
-        </Text>
-        <DefaultButton
-          toggle
-          checked={unreadOnly}
-          text={unreadOnly ? "全部" : "仅未读"}
-          iconProps={{ iconName: unreadOnly ? "FilterSolid" : "Filter" }}
-          onClick={onClickFilter}
-          className="ml-auto mr-2"
-        />
-        <DefaultButton
-          iconProps={{ iconName: "Refresh" }}
-          onClick={onClickRefresh}
+      <Stack className="sticky -top-12 bg-inherit z-10 pt-16 pb-4 px-6 sm:px-12">
+        <Stack className="flex sm:hidden mb-2" horizontal>
+          <IconButton
+            iconProps={{ iconName: "GlobalNavButton" }}
+            onClick={() => setIsNavigationPanelOpen(true)}
+            className="mr-3"
+          />
+        </Stack>
+        <Stack
           className=""
-          text="刷新"
-        />
+          horizontal
+          verticalAlign="center"
+          horizontalAlign="space-between"
+        >
+          <Text className="text-lg font-bold mr-auto">
+            {unreadOnly ? "未读文章" : "全部文章"}
+          </Text>
+          <DefaultButton
+            toggle
+            checked={unreadOnly}
+            text={unreadOnly ? "全部" : "仅未读"}
+            iconProps={{ iconName: unreadOnly ? "FilterSolid" : "Filter" }}
+            onClick={onClickFilter}
+            className="ml-auto mr-2"
+          />
+          <DefaultButton
+            iconProps={{ iconName: "Refresh" }}
+            onClick={onClickRefresh}
+            className=""
+            text="刷新"
+          />
+        </Stack>
       </Stack>
 
-      <div className="px-10" data-is-scrollable="true">
+      <div className="px-4 sm:px-10" data-is-scrollable="true">
         {onRenderList()}
         <div className="flex justify-center w-full p-4">
           {streamContentQuery.isFetching && <Spinner />}
@@ -343,7 +347,7 @@ export default function Home({}: Props) {
       }}
     >
       <Stack
-        className="px-12 py-4"
+        className="px-6 sm:px-12 py-4"
         horizontal
         verticalAlign="center"
         tokens={{ childrenGap: 12 }}
@@ -370,7 +374,7 @@ export default function Home({}: Props) {
 
       <Stack className="relative" disableShrink grow>
         <div
-          className="overflow-y-scroll scrollbar w-full h-full absolute top-0 left-0 px-12 "
+          className="overflow-y-scroll scrollbar w-full h-full absolute top-0 left-0  px-6 sm:px-12 "
           ref={articleScrollContainerRef}
         >
           {curArticle ? (
