@@ -64,7 +64,7 @@ export default function Home({}: Props) {
   });
   const streamId =
     getQueryParma(router.query.streamId) ?? getRootStreamId(userId);
-
+  const articleId = router?.query?.articleId;
   const streamContentQueryKey = getStreamContentQueryKey({
     unreadOnly,
     userId,
@@ -94,6 +94,13 @@ export default function Home({}: Props) {
       articleScrollContainerRef.current.scrollTop = 0;
     }
   }, [curArticle?.id]);
+
+  useEffect(() => {
+    if (articleId) {
+    } else {
+      setIsArticlePanelOpen(false);
+    }
+  }, [articleId]);
 
   const onEnterWaypoint = useCallback(() => {
     if (streamContentQuery.hasNextPage) {
@@ -135,6 +142,12 @@ export default function Home({}: Props) {
       };
 
       const onClickTitle = () => {
+        router.push({
+          pathname: "/",
+          query: {
+            articleId: item.id,
+          },
+        });
         setCurArticle(item);
         setIsArticlePanelOpen(true);
         if (!item.isRead) {
@@ -319,7 +332,7 @@ export default function Home({}: Props) {
   );
 
   const handleCloseArticle = () => {
-    setIsArticlePanelOpen(false);
+    router.back();
   };
 
   const articlePaneElem = (
