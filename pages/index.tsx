@@ -27,7 +27,6 @@ import { useStreamContent } from "../utils/useStreamContent";
 import { filterImgSrcfromHtmlStr } from "../utils/filterImgSrcfromHtmlStr";
 import {
   StreamContentItem,
-  StreamContentItemWithPageIndex,
   StreamContentsResponse,
 } from "../server/inoreader";
 
@@ -42,6 +41,10 @@ import { getStreamContentQueryKey } from "../utils/getStreamContentQueryKey";
 import { LAYOUT } from "../constants";
 
 interface Props {}
+
+interface StreamContentItemWithPageIndex extends StreamContentItem {
+  pageIndex: number;
+}
 
 const getQueryParma = (query: string | string[] | undefined) => {
   if (Array.isArray(query)) {
@@ -427,7 +430,7 @@ export default function Home({}: Props) {
           grow
           horizontalAlign="center"
         >
-          <Stack className="w-full max-w-3xl bg-gray-50 relative h-full overflow-x-hidden">
+          <Stack className="w-full max-w-4xl 2xl:max-w-5xl  bg-gray-50 relative h-full overflow-x-hidden">
             {midElem}
             {articlePaneElem}
           </Stack>

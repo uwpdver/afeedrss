@@ -1,0 +1,12 @@
+export * from './types';
+export { addSubscription } from './addSubscription'
+export { getFolderOrTagList } from './getFolderOrTagList'
+export { getStreamContents } from './getStreamContents'
+export { getStreamPreferenceList } from './getStreamPreferenceList'
+export { getSubscriptionList } from './getSubscriptionList'
+export { getUserInfo } from './getUserInfo'
+export { markAllAsRead } from './markAllAsRead'
+export { markArticleAsRead } from './markArticleAsRead'
+export { markArticleAsStar } from './markArticleAsStar'
+export { renameSubscription } from './renameSubscription'
+export { unsubscription } from './unsubscription'

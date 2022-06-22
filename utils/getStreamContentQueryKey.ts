@@ -1,3 +1,4 @@
+import { QUERY_KEYS } from "../constants";
 import { getRootStreamId } from "./getRootSteamId";
 
 export interface StreamContentQueryKeyParmas {
@@ -12,7 +13,7 @@ export function getStreamContentQueryKey({
   streamId,
 }: StreamContentQueryKeyParmas): any[] {
   return [
-    "feed/streamContentQuery",
+    QUERY_KEYS.STREAM_CONTENT,
     streamId || getRootStreamId(userId),
     unreadOnly,
   ];
