@@ -2,16 +2,12 @@ import React from "react";
 import {
   Text,
   Stack,
-  StackItem,
-  Icon,
-  List,
   Nav,
   IRenderFunction,
   INavLink,
 } from "@fluentui/react";
 import Link from "next/link";
 
-import { NavListItem } from "./types";
 import { NAV_LIST } from "./constants";
 
 export default function SettingsNav() {
