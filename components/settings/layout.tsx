@@ -44,7 +44,7 @@ export default function SettingsLayout({ title, children, tailElem }: Props) {
           <Stack className="w-full max-w-3xl bg-gray-50 relative h-full overflow-x-hidden">
             <div>
               <Stack
-                className="px-12 pt-16 pb-4 h-14"
+                className="px-12 pt-16 pb-4 h-14 mb-2"
                 horizontal
                 verticalAlign="center"
                 disableShrink

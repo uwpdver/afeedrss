@@ -66,8 +66,6 @@ export function useStreamContent(streamContentQueryKey: unknown[]) {
     streamContentQueryKey,
     fetchStreamContent,
     {
-      refetchOnWindowFocus: false,
-      retry: false,
       getNextPageParam: (lastPage, pages) => {
         return lastPage.continuation;
       },

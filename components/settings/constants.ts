@@ -12,9 +12,9 @@ export const NAV_LIST: NavListItem[] = [
     url: "/settings/interface",
   },
   {
-    name: "阅读偏好",
-    iconProps: { iconName: "ReadingMode" },
-    url: "/settings/reading",
+    name: "订阅源",
+    iconProps: { iconName: "Subscribe" },
+    url: "/settings/subscription_source",
   },
   {
     name: "关于",

@@ -41,11 +41,20 @@ export interface Sortable {
   sortid: string;
 }
 
+export interface category {
+  id: string,
+  label: string
+};
+
 export interface Subscription extends Sortable {
   id: string;
   title: string;
   iconUrl?: string;
   iconName?: string;
+  firstitemmsec: number,
+  url: string;
+  htmlUrl: string;
+  categories: category[];
 }
 
 export interface InoreaderTag extends Sortable {

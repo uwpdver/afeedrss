@@ -91,11 +91,11 @@ const createFolderLink = (
 };
 
 export default class SubscriptionNavTreeBuilder {
-  private rootId: string = "";
-  private subscriptionById: KeyValuePair<Subscription> = {};
-  private tagsById: KeyValuePair<Folder> = {};
-  private streamPrefById: KeyValuePair<IdValuePair[]> = {};
-  private sortIdToId: KeyValuePair<string> = {};
+  rootId: string = "";
+  subscriptionById: KeyValuePair<Subscription> = {};
+  tagsById: KeyValuePair<Folder> = {};
+  streamPrefById: KeyValuePair<IdValuePair[]> = {};
+  sortIdToId: KeyValuePair<string> = {};
 
   constructor({
     userId,
