@@ -1,17 +1,17 @@
 import React, { useMemo } from "react";
-import { Stack, Text, INavLink, Nav, IRenderFunction } from "@fluentui/react";
+import { useQuery } from "react-query";
 import { useRouter } from "next/router";
 import qs from "query-string";
-import { FolderEntity, InoreaderTag } from "../../types";
-import { StreamPreferenceListResponse } from "../../server/inoreader";
-import server from "../../server";
-import { useQuery } from "react-query";
-import SubscriptionNavTreeBuilder from "../../utils/subscriptionNavTreeBuilder";
 import { normalize, NormalizedSchema, schema } from "normalizr";
-import { Subscription, SubscriptionEntity } from "../../types";
+import { Stack, Text, INavLink, Nav, IRenderFunction } from "@fluentui/react";
+
+import server from "../../server"; 
+import { FolderEntity, InoreaderTag } from "../../types";
+import SubscriptionNavTreeBuilder from "../../utils/subscriptionNavTreeBuilder";
+import { useSubscriptionsListQuery } from "./utils";
+import { QUERY_KEYS } from "../../constants";
 
 const folder = new schema.Entity("folder");
-const subscription = new schema.Entity("subscription", undefined);
 
 export interface Props {
   userId?: string;
@@ -38,8 +38,8 @@ const SourcesPanel = ({ className, userId }: Props) => {
     );
   };
 
-  const streamPreferencesQuery = useQuery<StreamPreferenceListResponse>(
-    "streamPreferences",
+  const streamPreferencesQuery = useQuery(
+    QUERY_KEYS.STREAM_PREFERENCES,
     async () => {
       const res = await server.inoreader.getStreamPreferenceList();
       return res.data;
@@ -51,7 +51,7 @@ const SourcesPanel = ({ className, userId }: Props) => {
   );
 
   const folderQuery = useQuery<NormalizedSchema<FolderEntity, string[]>>(
-    "home/folderQuery",
+    QUERY_KEYS.FOLDER,
     async () => {
       const res = await server.inoreader.getFolderOrTagList(1, 1);
       const tags = res.data.tags;
@@ -65,21 +65,7 @@ const SourcesPanel = ({ className, userId }: Props) => {
     }
   );
 
-  const subscriptionsListQuery = useQuery(
-    "home/subscriptionsListQuery",
-    async () => {
-      const subscriptionList = await server.inoreader.getSubscriptionList();
-      const subscriptions = subscriptionList.data.subscriptions;
-      const subscriptionsNormalized = normalize<
-        Subscription,
-        SubscriptionEntity
-      >(subscriptions, [subscription]);
-      return subscriptionsNormalized;
-    },
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
+  const subscriptionsListQuery = useSubscriptionsListQuery();
   const subscriptionsListData = subscriptionsListQuery.data;
   const folderData = folderQuery.data;
   const streamPreferencesData = streamPreferencesQuery.data;
