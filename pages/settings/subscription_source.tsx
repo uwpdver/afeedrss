@@ -1,13 +1,9 @@
 import {
   DefaultButton,
-  DetailsList,
   GroupedList,
-  Dialog,
-  IColumn,
   SelectionMode,
   Text,
   IGroup,
-  DetailsRow,
   Stack,
   StackItem,
   IGroupHeaderProps,
@@ -15,20 +11,20 @@ import {
   Modal,
   Dropdown,
   Label,
-  PrimaryButton,
   TextField,
   IDropdownOption,
+  DetailsRow,
+  IColumn,
+  Selection,
+  PrimaryButton,
 } from "@fluentui/react";
-import { isEmpty } from "lodash";
 import { useSession } from "next-auth/react";
-import { denormalize } from "normalizr";
-import React, { FormEventHandler, useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import SettingsLayout from "../../components/settings/layout";
 import {
   useSubscriptionsListQuery,
-  subscriptionSchema,
   useFolderQuery,
   useStreamPreferencesQuery,
 } from "../../components/sourcePanel/utils";
@@ -90,6 +86,23 @@ export default function SubscriptionSource({}: Props) {
     }
   );
 
+  const selection = useMemo(
+    () =>
+      new Selection({
+        items: items.map((item) => ({ ...item, key: item.id })),
+      }),
+    [items]
+  );
+
+  const columns: IColumn[] = [
+    {
+      key: "name",
+      name: "名字",
+      fieldName: "title",
+      minWidth: 400,
+    },
+  ];
+
   const onRenderCell = (
     nestingDepth?: number,
     item?: Subscription,
@@ -97,23 +110,14 @@ export default function SubscriptionSource({}: Props) {
     group?: IGroup
   ) => {
     return item && typeof itemIndex === "number" && itemIndex > -1 ? (
-      <Stack
-        className="group h-10"
-        horizontal
-        verticalAlign="center"
-        tokens={{
-          padding: `0 0 0 40px`,
-        }}
-      >
-        <StackItem grow>
-          <Text>{item.title}</Text>
-        </StackItem>
-        <StackItem className="hidden group-hover:flex">
-          <DefaultButton iconProps={{ iconName: "Unsubscribe" }}>
-            退订
-          </DefaultButton>
-        </StackItem>
-      </Stack>
+      <DetailsRow
+        columns={columns}
+        groupNestingDepth={nestingDepth}
+        item={item}
+        itemIndex={itemIndex}
+        selectionMode={SelectionMode.multiple}
+        group={group}
+      />
     ) : null;
   };
 
@@ -197,15 +201,16 @@ export default function SubscriptionSource({}: Props) {
       }
     >
       <GroupedList
-        selectionMode={SelectionMode.none}
+        selectionMode={SelectionMode.multiple}
         items={items}
         groups={groups}
-        groupProps={{
-          onRenderHeader,
-        }}
+        // groupProps={{
+        //   onRenderHeader,
+        // }}
         onRenderCell={onRenderCell}
         onShouldVirtualize={() => false}
       />
+
       <Modal isOpen={isDialogOpen} onDismiss={() => setIsDialogOpen(false)}>
         <form onSubmit={handleOnSubmit}>
           <Stack horizontal verticalAlign="center" className="py-1 pl-4 pr-2">
@@ -240,6 +245,9 @@ export default function SubscriptionSource({}: Props) {
             </div>
             <Stack
               className="px-8 py-6"
+              styles={{
+                root: ["bg-green-100"],
+              }}
               horizontal
               horizontalAlign="end"
               verticalAlign="center"
@@ -253,7 +261,7 @@ export default function SubscriptionSource({}: Props) {
                 />
               </Stack.Item>
               <Stack.Item grow={1}>
-                <DefaultButton
+                <PrimaryButton
                   className="w-full"
                   disabled={addFeedMutation.isLoading}
                   type="submit"

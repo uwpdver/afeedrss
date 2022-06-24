@@ -99,6 +99,26 @@ export const getComponentsStyle = (palette: Partial<IPalette>) => {
         ],
       },
     },
+    OverflowSet: {
+      styles: {
+        item: {
+          "& button": {
+            borderRadius: 0,
+          },
+          "&:not(:first-child) button": {
+            borderLeft: 0,
+          },
+          "&:first-child > button": {
+            borderBottomLeftRadius: 4,
+            borderTopLeftRadius: 4,
+          },
+          "&:last-child > button": {
+            borderBottomRightRadius: 4,
+            borderTopRightRadius: 4,
+          },
+        },
+      },
+    },
     DetailsList: {
       styles: {
         root: [{}],
@@ -217,10 +237,12 @@ export const getComponentsStyle = (palette: Partial<IPalette>) => {
             marginBottom: 4,
           },
         ],
-        link: [{
-          height: 40,
-          lineHeight: 40,
-        }],
+        link: [
+          {
+            height: 40,
+            lineHeight: 40,
+          },
+        ],
       },
     },
   };

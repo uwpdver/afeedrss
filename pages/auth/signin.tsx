@@ -8,7 +8,7 @@ import {
 import { GetServerSideProps } from "next";
 import { BuiltInProviderType } from "next-auth/providers";
 import Image from "next/image";
-import { Stack, DefaultButton, StackItem } from "@fluentui/react";
+import { Stack, DefaultButton, StackItem, PrimaryButton } from "@fluentui/react";
 
 interface Props {
   providers: Record<
@@ -37,11 +37,11 @@ export default function SignIn({ providers }: Props) {
         {providers &&
           Object.values(providers).map((provider) => (
             <div key={provider.name}>
-              <DefaultButton
+              <PrimaryButton
                 onClick={() => signIn(provider.id, { callbackUrl: "/" })}
               >
                 {`登录 ${provider.name} 账号`}
-              </DefaultButton>
+              </PrimaryButton>
             </div>
           ))}
       </Stack>

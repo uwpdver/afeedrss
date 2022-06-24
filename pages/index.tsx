@@ -19,16 +19,14 @@ import {
   Text,
   DefaultButton,
   IList,
+  OverflowSet,
 } from "@fluentui/react";
 import { Waypoint } from "react-waypoint";
 import { produce } from "immer";
 
 import { useStreamContent } from "../utils/useStreamContent";
 import { filterImgSrcfromHtmlStr } from "../utils/filterImgSrcfromHtmlStr";
-import {
-  StreamContentItem,
-  StreamContentsResponse,
-} from "../server/inoreader";
+import { StreamContentItem, StreamContentsResponse } from "../server/inoreader";
 
 import StatusCard, { Status } from "../components/statusCard";
 import SourcesPanel from "../components/sourcePanel";
@@ -145,12 +143,8 @@ export default function Home({}: Props) {
       };
 
       const onClickTitle = () => {
-        router.push({
-          pathname: "/",
-          query: {
-            articleId: item.id,
-          },
-        });
+        const href = `/?articleId=${item.id}`;
+        router.push(href, href, { shallow: true });
         setCurArticle(item);
         setIsArticlePanelOpen(true);
         if (!item.isRead) {
@@ -236,64 +230,8 @@ export default function Home({}: Props) {
     setUnreadOnly((state) => !state);
   };
 
-  const leftSideElem = (
-    <>
-      {isNavigationPanelOpen && (
-        <div
-          className="bg-black/40 fixed inset-0 z-20 cursor-pointer"
-          onClick={() => setIsNavigationPanelOpen(false)}
-          style={{ backdropFilter: "blur(10px)" }}
-        />
-      )}
-      <Stack
-        grow
-        tokens={{ maxWidth: LAYOUT.NAVIGATION_WIDTH }}
-        className={`absolute left-0 top-0 bottom-0 z-20 bg-gray-100 transition-transform sm:relative sm:translate-x-0 ${
-          isNavigationPanelOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <Stack
-          disableShrink
-          className="px-4 py-4"
-          horizontal
-          verticalAlign="center"
-          horizontalAlign="space-between"
-        >
-          <StackItem disableShrink>
-            <Image
-              src=""
-              alt=""
-              className="w-12 h-12 rounded-full bg-gray-400 mr-4"
-            />
-          </StackItem>
-          <StackItem grow disableShrink>
-            <Text className="text-lg font-bold" block>
-              {session?.user?.name}
-            </Text>
-            <Text className="text-base text-gray-400">
-              {session?.user?.email}
-            </Text>
-          </StackItem>
-          <StackItem disableShrink>
-            <Link href="/settings" passHref>
-              <a>
-                <IconButton iconProps={{ iconName: "Settings" }} />
-              </a>
-            </Link>
-          </StackItem>
-        </Stack>
-
-        <Stack className="sticky top-0 overflow-y-hidden" grow>
-          <div className="overflow-y-scroll scrollbar flex-1">
-            <SourcesPanel userId={userId} />
-          </div>
-        </Stack>
-      </Stack>
-    </>
-  );
-
   const midElem = (
-    <Stack className="overflow-y-scroll scrollbar bg-gray-50">
+    <Stack className={`overflow-y-scroll scrollbar bg-gray-50`}>
       {/* head */}
       <Stack className="sticky -top-12 bg-inherit z-10 pt-16 pb-4 px-6 sm:px-12">
         <Stack className="flex sm:hidden mb-2" horizontal>
@@ -309,26 +247,43 @@ export default function Home({}: Props) {
           verticalAlign="center"
           horizontalAlign="space-between"
         >
-          <Text className="text-lg font-bold mr-auto">
-            {unreadOnly ? "未读文章" : "全部文章"}
-          </Text>
-          <DefaultButton
-            toggle
-            checked={unreadOnly}
-            text={unreadOnly ? "全部" : "仅未读"}
-            iconProps={{ iconName: unreadOnly ? "FilterSolid" : "Filter" }}
-            onClick={onClickFilter}
-            className="ml-auto mr-2"
-          />
-          <DefaultButton
-            iconProps={{ iconName: "Refresh" }}
-            onClick={onClickRefresh}
-            className=""
-            text="刷新"
-          />
+          <StackItem grow>
+            <Text className="text-lg font-bold mr-auto">
+              {unreadOnly ? "未读文章" : "全部文章"}
+            </Text>
+          </StackItem>
+          <StackItem disableShrink>
+            <OverflowSet
+              items={[
+                {
+                  key: "filter",
+                  text: unreadOnly ? "全部" : "仅未读",
+                  iconOnly: true,
+                  checked: unreadOnly,
+                  iconProps: {
+                    iconName: unreadOnly ? "FilterSolid" : "Filter",
+                  },
+                  onClick: onClickFilter,
+                },
+                {
+                  key: "refresh",
+                  text: "刷新",
+                  iconOnly: true,
+                  iconProps: { iconName: "Refresh" },
+                  onClick: onClickRefresh,
+                },
+              ]}
+              overflowItems={[]}
+              onRenderItem={(item) => <DefaultButton {...item} />}
+              onRenderOverflowButton={(props, defaultRender) =>
+                defaultRender!(props)
+              }
+            />
+          </StackItem>
         </Stack>
       </Stack>
 
+      {/* content */}
       <div className="px-4 sm:px-10" data-is-scrollable="true">
         {onRenderList()}
         <div className="flex justify-center w-full p-4">
@@ -420,9 +375,57 @@ export default function Home({}: Props) {
       </Head>
       <Stack
         horizontal
-        className="relative h-screen overflow-hidden bg-gray-100"
+        className="relative h-screen overflow-hidden bg-gray-100 sm:pl-[288px]"
       >
-        {leftSideElem}
+        {isNavigationPanelOpen && (
+          <div
+            className="bg-black/50 fixed inset-0 z-20 cursor-pointer"
+            onClick={() => setIsNavigationPanelOpen(false)}
+          />
+        )}
+        <Stack
+          grow
+          className={`fixed left-0 top-0 bottom-0 z-20 bg-gray-100 w-[calc(100% - 64px)] sm:w-[288px] transition-transform sm:translate-x-0 delay-100 ${
+            isNavigationPanelOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <Stack
+            disableShrink
+            className="px-4 py-4"
+            horizontal
+            verticalAlign="center"
+            horizontalAlign="space-between"
+          >
+            <StackItem disableShrink>
+              <Image
+                src=""
+                alt=""
+                className="w-12 h-12 rounded-full bg-gray-400 mr-4"
+              />
+            </StackItem>
+            <StackItem grow disableShrink>
+              <Text className="text-lg font-bold" block>
+                {session?.user?.name}
+              </Text>
+              <Text className="text-base text-gray-400">
+                {session?.user?.email}
+              </Text>
+            </StackItem>
+            <StackItem disableShrink>
+              <Link href="/settings" passHref>
+                <a>
+                  <IconButton iconProps={{ iconName: "Settings" }} />
+                </a>
+              </Link>
+            </StackItem>
+          </Stack>
+
+          <Stack className="sticky top-0 overflow-y-hidden" grow>
+            <div className="overflow-y-scroll scrollbar flex-1">
+              <SourcesPanel userId={userId} />
+            </div>
+          </Stack>
+        </Stack>
         <Stack
           className={`bg-gray-200 transition-transform ${
             isNavigationPanelOpen ? "scale-95" : "scale-none"

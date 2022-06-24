@@ -1,8 +1,6 @@
 import React, { useMemo } from "react";
-import { useQuery } from "react-query";
 import { useRouter } from "next/router";
 import qs from "query-string";
-import { schema } from "normalizr";
 import { Stack, Text, INavLink, Nav, IRenderFunction } from "@fluentui/react";
 
 import SubscriptionNavTreeBuilder from "../../utils/subscriptionNavTreeBuilder";
@@ -11,8 +9,6 @@ import {
   useSubscriptionsListQuery,
   useFolderQuery,
 } from "./utils";
-
-const folder = new schema.Entity("folder");
 
 export interface Props {
   userId?: string;

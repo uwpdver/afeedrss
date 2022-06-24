@@ -7,11 +7,19 @@ interface Props {}
 
 export default function Account({}: Props) {
   const onClickSignout = () => {
-    signOut({callbackUrl: '/auth/signin'});
+    signOut({ callbackUrl: "/auth/signin" });
   };
   return (
-    <SettingsLayout title="账号">
-      <DefaultButton onClick={onClickSignout}>退出登录</DefaultButton>
-    </SettingsLayout>
+    <SettingsLayout
+      title="账号"
+      tailElem={
+        <DefaultButton
+          onClick={onClickSignout}
+          iconProps={{ iconName: "Leave" }}
+        >
+          退出登录
+        </DefaultButton>
+      }
+    ></SettingsLayout>
   );
 }

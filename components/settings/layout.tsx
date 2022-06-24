@@ -3,7 +3,6 @@ import { Text, Stack, StackItem, IconButton } from "@fluentui/react";
 import Link from "next/link";
 import Head from "next/head";
 import Nav from "./nav";
-import { LAYOUT } from "../../constants";
 
 interface Props {
   title?: string;
@@ -18,10 +17,13 @@ export default function SettingsLayout({ title, children, tailElem }: Props) {
         <title>{title}</title>
       </Head>
       <Stack
-        className="relative h-screen overflow-hidden bg-gray-100"
         horizontal
+        className="relative h-screen overflow-hidden bg-gray-100 sm:pl-[288px]"
       >
-        <Stack tokens={{ maxWidth: LAYOUT.NAVIGATION_WIDTH }} grow>
+        <Stack
+          grow
+          className={`fixed left-0 top-0 bottom-0 z-20 bg-gray-100 w-full sm:w-[288px]`}
+        >
           <Stack
             className="space-x-2 p-4"
             horizontal
@@ -40,8 +42,9 @@ export default function SettingsLayout({ title, children, tailElem }: Props) {
             <Nav />
           </StackItem>
         </Stack>
+
         <Stack className="bg-gray-200" grow horizontalAlign="center">
-          <Stack className="w-full max-w-3xl bg-gray-50 relative h-full overflow-x-hidden">
+          <Stack className="w-full max-w-4xl 2xl:max-w-5xl  bg-gray-50 relative h-full overflow-x-hidden">
             <div>
               <Stack
                 className="px-12 pt-16 pb-4 h-14 mb-2"
