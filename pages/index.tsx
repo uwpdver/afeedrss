@@ -231,7 +231,12 @@ export default function Home({}: Props) {
   };
 
   const midElem = (
-    <Stack className={`overflow-y-scroll scrollbar bg-gray-50`}>
+    <Stack
+      className={`overflow-y-scroll scrollbar bg-gray-50 transition-transform ease-in`}
+      style={{
+        transform: isArticlePanelOpen ? "translateX(-100%)" : "translateX(0)",
+      }}
+    >
       {/* head */}
       <Stack className="sticky -top-12 bg-inherit z-10 pt-16 pb-4 px-6 sm:px-12">
         <Stack className="flex sm:hidden mb-2" horizontal>
@@ -299,7 +304,7 @@ export default function Home({}: Props) {
 
   const articlePaneElem = (
     <Stack
-      className="absolute top-0 left-0 right-0 h-full z-10 bg-gray-50 transition-transform"
+      className="absolute inset-0 h-full z-10 bg-gray-50 transition-transform ease-in"
       style={{
         transform: isArticlePanelOpen ? "translateX(0)" : "translateX(100%)",
       }}
@@ -385,7 +390,7 @@ export default function Home({}: Props) {
         )}
         <Stack
           grow
-          className={`fixed left-0 top-0 bottom-0 z-20 bg-gray-100 w-[calc(100% - 64px)] sm:w-[288px] transition-transform sm:translate-x-0 delay-100 ${
+          className={`fixed left-0 top-0 bottom-0 z-20 bg-gray-100 w-[calc(100% - 64px)] sm:w-[288px] transition-transform ease-in sm:translate-x-0 delay-100 ${
             isNavigationPanelOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -427,7 +432,7 @@ export default function Home({}: Props) {
           </Stack>
         </Stack>
         <Stack
-          className={`bg-gray-200 transition-transform ${
+          className={`bg-gray-200 transition-transform ease-in ${
             isNavigationPanelOpen ? "scale-95" : "scale-none"
           }`}
           grow
