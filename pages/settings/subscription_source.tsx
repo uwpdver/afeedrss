@@ -19,7 +19,7 @@ import {
   PrimaryButton,
 } from "@fluentui/react";
 import { useSession } from "next-auth/react";
-import React, { useMemo, useRef, useState } from "react";
+import React, { FormEventHandler, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import SettingsLayout from "../../components/settings/layout";
@@ -164,9 +164,11 @@ export default function SubscriptionSource({}: Props) {
     setSelectedFolder(option);
   };
 
-  const handleOnSubmit = (e) => {
+  const handleOnSubmit: FormEventHandler = (e) => {
     e.preventDefault();
-    const form = e.target;
+    const form =  e.target as typeof e.target & {
+      feedUrl: { value: string };
+    };
     const feedUrl = form["feedUrl"].value;
     addFeedMutation.mutate({ feedUrl, folderId: String(selectedFolder?.key) });
   };
