@@ -4,10 +4,11 @@ import { Icon, Stack, StackItem, Text } from "@fluentui/react";
 import SettingsLayout from "../../components/settings/layout";
 import { NAV_LIST } from "../../components/settings/constants";
 import { NavListItem } from "./../../components/settings/types";
+import { getLayout } from "../../components/home/layout";
 
 interface Props {}
 
-export default function Settings({}: Props) {
+function Settings({}: Props) {
   const onRenderNavItem = ({ iconProps, name, url, desc }: NavListItem) => (
     <Link href={url}>
       <a>
@@ -37,3 +38,8 @@ export default function Settings({}: Props) {
     </SettingsLayout>
   );
 }
+
+
+Settings.getLayout = getLayout;
+
+export default Settings;

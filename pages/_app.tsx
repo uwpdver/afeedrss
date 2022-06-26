@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { initializeIcons, ThemeProvider } from "@fluentui/react";
 import "../styles/globals.css";
 import { lightTheme, darkTheme } from "../theme";
+import { NextPageWithLayout } from "../types";
 
 initializeIcons();
 const isDarkMode = false;
@@ -40,6 +41,10 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
     defaultGlobalSettings
   );
   const theme = isDarkMode ? darkTheme : lightTheme;
+  const getLayout =
+    (Component as NextPageWithLayout).getLayout ||
+    ((pageComponent: typeof Component) => pageComponent);
+
   return (
     <SessionProvider session={session}>
       <Head>
@@ -50,7 +55,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
           <GlobalSettingsCtx.Provider
             value={{ globalSettings, setGlobalSettings }}
           >
-            <Component {...pageProps} />
+            {getLayout(<Component {...pageProps} />)}
           </GlobalSettingsCtx.Provider>
         </ThemeProvider>
       </QueryClientProvider>

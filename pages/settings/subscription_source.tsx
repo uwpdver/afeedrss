@@ -33,10 +33,11 @@ import server from "../../server";
 import { Subscription } from "../../types";
 import { getTagNameFromId } from "../../utils/subscriptionNavTreeBuilder";
 import SubscriptionGroupedListBuilder from "./../../utils/subscriptionListTreeBuilder";
+import { getLayout } from "../../components/home/layout";
 
 interface Props {}
 
-export default function SubscriptionSource({}: Props) {
+function SubscriptionSource({}: Props) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [seletedIndex, setSeletedIndex] = useState(-1);
   const [selectedFolder, setSelectedFolder] = useState<IDropdownOption>();
@@ -277,3 +278,7 @@ export default function SubscriptionSource({}: Props) {
     </SettingsLayout>
   );
 }
+
+SubscriptionSource.getLayout = getLayout;
+
+export default SubscriptionSource;

@@ -1,11 +1,12 @@
 import React from "react";
 import { DefaultButton } from "@fluentui/react";
-import SettingsLayout from "../../components/settings/layout";
 import { signOut } from "next-auth/react";
+import SettingsLayout from "../../components/settings/layout";
+import { getLayout } from "../../components/home/layout";
 
 interface Props {}
 
-export default function Account({}: Props) {
+function Account({}: Props) {
   const onClickSignout = () => {
     signOut({ callbackUrl: "/auth/signin" });
   };
@@ -24,3 +25,7 @@ export default function Account({}: Props) {
     </SettingsLayout>
   );
 }
+
+Account.getLayout = getLayout;
+
+export default Account;

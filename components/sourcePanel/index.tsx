@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useContext } from "react";
 import { useRouter } from "next/router";
 import qs from "query-string";
 import { Stack, Text, INavLink, Nav, IRenderFunction } from "@fluentui/react";
 
 import SubscriptionNavTreeBuilder from "../../utils/subscriptionNavTreeBuilder";
+import { GlobalNavigationCtx } from './../home/layout';
 import {
   useStreamPreferencesQuery,
   useSubscriptionsListQuery,
@@ -17,7 +18,7 @@ export interface Props {
 
 const SourcesPanel = ({ className, userId }: Props) => {
   const router = useRouter();
-
+  const { setIsOpen } = useContext(GlobalNavigationCtx);
   const streamPreferencesQuery = useStreamPreferencesQuery();
   const folderQuery = useFolderQuery();
   const subscriptionsListQuery = useSubscriptionsListQuery();
@@ -49,7 +50,9 @@ const SourcesPanel = ({ className, userId }: Props) => {
   ) => {
     e?.preventDefault();
     const query = qs.stringify({ ...router.query, streamId: item?.key });
-    router.push(`/?${query}`);
+    const href = `/?${query}`;
+    router.push(href, href, { shallow: true });
+    setIsOpen(false);
   };
 
   const onRenderLink: IRenderFunction<INavLink> = (props, defaultRender) => {

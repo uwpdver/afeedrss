@@ -1,7 +1,7 @@
-import React from "react";
-import { Text, Stack, StackItem } from "@fluentui/react";
-import HomeLayout from "../home/layout";
+import React, { useContext } from "react";
+import { Text, Stack, StackItem, IconButton } from "@fluentui/react";
 import StatusCard, { Status } from "../statusCard";
+import { GlobalNavigationCtx } from "../home/layout";
 
 interface Props {
   title?: string;
@@ -9,31 +9,30 @@ interface Props {
   tailElem?: React.ReactNode;
 }
 
-export default React.memo(function SettingsLayout({
-  title,
-  children,
-  tailElem,
-}: Props) {
+export default function Layout({ title, children, tailElem }: Props) {
+  const { setIsOpen } = useContext(GlobalNavigationCtx);
   return (
-    <HomeLayout title={title}>
-      <div className="px-6 sm:px-12">
-        <Stack
-          className="pt-16 pb-4 h-14 mb-2"
-          horizontal
-          verticalAlign="center"
-          disableShrink
-        >
+    <div className="px-6 sm:px-12">
+      <div className="pt-4 sm:pt-16 mb-4">
+        <div className="sm:hidden mb-2">
+          <IconButton
+            iconProps={{ iconName: "GlobalNavButton" }}
+            onClick={() => setIsOpen(true)}
+            className="mr-3"
+          />
+        </div>
+        <Stack horizontal verticalAlign="center">
           <StackItem grow>
             <Text className="text-lg font-bold">{title}</Text>
           </StackItem>
           <StackItem>{tailElem}</StackItem>
         </Stack>
-        <Stack grow>
-          {children ?? (
-            <StatusCard status={Status.EMPTY} content="这里空无一物" />
-          )}
-        </Stack>
       </div>
-    </HomeLayout>
+      <Stack grow>
+        {children ?? (
+          <StatusCard status={Status.EMPTY} content="这里空无一物" />
+        )}
+      </Stack>
+    </div>
   );
-});
+}

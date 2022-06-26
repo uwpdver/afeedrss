@@ -1,11 +1,12 @@
 import React from "react";
-import { Stack, DefaultButton, Label, Toggle } from "@fluentui/react";
-import SettingsLayout from "../../components/settings/layout";
+import { Stack, Label, Toggle } from "@fluentui/react";
 import { GlobalSettingsCtx } from "./../_app";
+import SettingsLayout from "../../components/settings/layout";
+import { getLayout } from "../../components/home/layout";
 
 interface Props {}
 
-export default function Account({}: Props) {
+function Interface({}: Props) {
   const { globalSettings, setGlobalSettings } =
     React.useContext(GlobalSettingsCtx);
   const handleOnShowFeedThumbnailToggleChange = (
@@ -37,3 +38,7 @@ export default function Account({}: Props) {
     </SettingsLayout>
   );
 }
+
+Interface.getLayout = getLayout;
+
+export default Interface;

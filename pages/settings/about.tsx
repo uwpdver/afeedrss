@@ -1,10 +1,11 @@
 import React from "react";
 import { Stack, Image, Text } from "@fluentui/react";
 import SettingsLayout from "../../components/settings/layout";
+import { getLayout } from "../../components/home/layout";
 
 interface Props {}
 
-export default function Account({}: Props) {
+function Account({}: Props) {
   return (
     <SettingsLayout title="关于">
        <Stack className="text-base space-y-2">
@@ -18,3 +19,7 @@ export default function Account({}: Props) {
     </SettingsLayout>
   );
 }
+
+Account.getLayout = getLayout;
+
+export default Account;

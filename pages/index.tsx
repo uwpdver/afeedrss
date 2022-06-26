@@ -22,13 +22,13 @@ import {
 } from "@fluentui/react";
 import { Waypoint } from "react-waypoint";
 import { produce } from "immer";
+import Head from "next/head";
 
 import { useStreamContent } from "../utils/useStreamContent";
 import { filterImgSrcfromHtmlStr } from "../utils/filterImgSrcfromHtmlStr";
 import { StreamContentItem, StreamContentsResponse } from "../server/inoreader";
 
 import StatusCard, { Status } from "../components/statusCard";
-import Layout from "../components/home/layout";
 import { GetServerSideProps } from "next";
 import { getSession, useSession } from "next-auth/react";
 import { getRootStreamId } from "../utils/getRootSteamId";
@@ -37,6 +37,8 @@ import { InfiniteData, useQueryClient } from "react-query";
 import { getStreamContentQueryKey } from "../utils/getStreamContentQueryKey";
 import dayjs from "../utils/dayjs";
 import { GlobalSettingsCtx } from "./_app";
+import { getLayout } from "../components/home/layout";
+import { GlobalNavigationCtx } from "./../components/home/layout";
 
 interface Props {}
 
@@ -52,13 +54,13 @@ const getQueryParma = (query: string | string[] | undefined) => {
   }
 };
 
-export default function Home({}: Props) {
+function Home({}: Props) {
   const {
     globalSettings: { showFeedThumbnail },
   } = useContext(GlobalSettingsCtx);
+  const { setIsOpen } = useContext(GlobalNavigationCtx);
   const [curArticle, setCurArticle] = useState<StreamContentItem | null>(null);
   const [isArticlePanelOpen, setIsArticlePanelOpen] = useState(false);
-  const [isNavigationPanelOpen, setIsNavigationPanelOpen] = useState(false);
   const [isAritleTitleShow, setIsAritleTitleShow] = useState(false);
   const { data: session } = useSession();
   const userId = session?.user?.id || "";
@@ -249,7 +251,7 @@ export default function Home({}: Props) {
         <Stack className="flex sm:hidden mb-2" horizontal>
           <IconButton
             iconProps={{ iconName: "GlobalNavButton" }}
-            onClick={() => setIsNavigationPanelOpen(true)}
+            onClick={() => setIsOpen(true)}
             className="mr-3"
           />
         </Stack>
@@ -383,14 +385,17 @@ export default function Home({}: Props) {
   );
 
   return (
-    <Layout
-      title={
-        isArticlePanelOpen ? `${curArticle?.title}-RSS 阅读器` : "RSS 阅读器"
-      }
-    >
+    <>
+      <Head>
+        <title>
+          {isArticlePanelOpen
+            ? `${curArticle?.title}-RSS 阅读器`
+            : "RSS 阅读器"}
+        </title>
+      </Head>
       {midElem}
       {articlePaneElem}
-    </Layout>
+    </>
   );
 }
 
@@ -416,3 +421,7 @@ export const getServerSideProps: GetServerSideProps<
     props: {},
   };
 };
+
+Home.getLayout = getLayout;
+
+export default Home;

@@ -1,28 +1,38 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import Head from "next/head";
 import { IconButton, Stack, StackItem, Image, Text } from "@fluentui/react";
 
 import SourcesPanel from "../sourcePanel";
 import { useSession } from "next-auth/react";
 
 interface Props {
-  title?: string;
   children?: React.ReactNode;
 }
 
-const DEFAULT_TITLE = "RSS 阅读器";
+interface GlobalNavigation {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+const defaultGlobalNavigation = {
+  isOpen: false,
+  setIsOpen: () => {},
+};
+export const GlobalNavigationCtx = React.createContext<GlobalNavigation>(
+  defaultGlobalNavigation
+);
 
-export default function HomeLayout({ title = DEFAULT_TITLE, children }: Props) {
+export default function Layout({ children }: Props) {
   const [isNavigationPanelOpen, setIsNavigationPanelOpen] = useState(false);
   const { data: session } = useSession();
   const userId = session?.user?.id || "";
 
   return (
-    <>
-      <Head>
-        <title>{title}</title>
-      </Head>
+    <GlobalNavigationCtx.Provider
+      value={{
+        isOpen: isNavigationPanelOpen,
+        setIsOpen: setIsNavigationPanelOpen,
+      }}
+    >
       <Stack
         horizontal
         className="relative h-screen overflow-hidden bg-gray-100 sm:pl-[288px]"
@@ -88,6 +98,10 @@ export default function HomeLayout({ title = DEFAULT_TITLE, children }: Props) {
           </Stack>
         </Stack>
       </Stack>
-    </>
+    </GlobalNavigationCtx.Provider>
   );
 }
+
+export const getLayout = (page: React.ReactElement): React.ReactElement => (
+  <Layout>{page}</Layout>
+);
