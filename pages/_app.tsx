@@ -8,18 +8,37 @@ import "../styles/globals.css";
 import { lightTheme, darkTheme } from "../theme";
 
 initializeIcons();
-
 const isDarkMode = false;
 
+interface GlobalSettings {
+  showFeedThumbnail: boolean;
+}
+const defaultGlobalSettings = {
+  showFeedThumbnail: true,
+};
+export const GlobalSettingsCtx = React.createContext<{
+  setGlobalSettings: React.Dispatch<React.SetStateAction<GlobalSettings>>;
+  globalSettings: GlobalSettings;
+}>({
+  setGlobalSettings: () => {},
+  globalSettings: defaultGlobalSettings,
+});
+
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
-  const [queryClient] = React.useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-        refetchOnWindowFocus: false,
-      }
-    }
-  }));
+  const [queryClient] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
+  const [globalSettings, setGlobalSettings] = React.useState<GlobalSettings>(
+    defaultGlobalSettings
+  );
   const theme = isDarkMode ? darkTheme : lightTheme;
   return (
     <SessionProvider session={session}>
@@ -28,7 +47,11 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
       </Head>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
-          <Component {...pageProps} />
+          <GlobalSettingsCtx.Provider
+            value={{ globalSettings, setGlobalSettings }}
+          >
+            <Component {...pageProps} />
+          </GlobalSettingsCtx.Provider>
         </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>

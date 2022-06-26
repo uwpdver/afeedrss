@@ -15,7 +15,7 @@
     "@types/oauth": "^0.9.1",
     "@types/react-helmet": "^6.1.5",
     "axios": "^0.27.2",
-    "dayjs": "^1.11.1",
+    "dayjs": "^1.11.3",
     "immer": "^9.0.12",
     "lodash.keyby": "^4.6.0",
     "next": "12.1.5",

@@ -11,7 +11,7 @@ export default function Account({}: Props) {
   };
   return (
     <SettingsLayout
-      title="账号"
+      title="账户"
       tailElem={
         <DefaultButton
           onClick={onClickSignout}
@@ -20,6 +20,7 @@ export default function Account({}: Props) {
           退出登录
         </DefaultButton>
       }
-    ></SettingsLayout>
+    >
+    </SettingsLayout>
   );
 }
