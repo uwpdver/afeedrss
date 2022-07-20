@@ -11,22 +11,15 @@ import { resetIds } from "@fluentui/utilities";
 
 const stylesheet = Stylesheet.getInstance();
 
-stylesheet.setConfig({
-  injectionMode: InjectionMode.none,
-  namespace: "server"
-});
-
 export default class MyDocument extends Document<{
   styleTags: any;
   serializedStylesheet: any;
 }> {
-  static async getInitialProps({renderPage}: DocumentContext) {
+  static async getInitialProps(ctx: DocumentContext) {
     resetIds();
-    // const initialProps = await Document.getInitialProps(ctx);
-    const page = renderPage(App => props => <App {...props} />);
+    const initialProps = await Document.getInitialProps(ctx);
     return {
-      // ...initialProps,
-      ...page,
+      ...initialProps,
       styleTags: stylesheet.getRules(true),
       serializedStylesheet: stylesheet.serialize(),
     };
