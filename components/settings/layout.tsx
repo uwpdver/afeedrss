@@ -1,5 +1,11 @@
 import React, { useContext } from "react";
-import { Text, Stack, StackItem, IconButton } from "@fluentui/react";
+import {
+  Text,
+  Stack,
+  StackItem,
+  IconButton,
+  Breadcrumb,
+} from "@fluentui/react";
 import StatusCard, { Status } from "../statusCard";
 import { GlobalNavigationCtx } from "../home/layout";
 
@@ -23,7 +29,7 @@ export default function Layout({ title, children, tailElem }: Props) {
         </div>
         <Stack horizontal verticalAlign="center">
           <StackItem grow>
-            <Text className="text-lg font-bold">{title}</Text>
+            <Breadcrumb items={[{ key: "1", text: "设置" }, { key: "2", text: "设置" }]} />
           </StackItem>
           <StackItem>{tailElem}</StackItem>
         </Stack>

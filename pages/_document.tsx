@@ -6,19 +6,27 @@ import Document, {
   Main,
   NextScript,
 } from "next/document";
-import { Stylesheet, resetIds } from "@fluentui/react";
+import { Stylesheet, InjectionMode } from "@fluentui/merge-styles";
+import { resetIds } from "@fluentui/utilities";
 
 const stylesheet = Stylesheet.getInstance();
+
+stylesheet.setConfig({
+  injectionMode: InjectionMode.none,
+  namespace: "server"
+});
 
 export default class MyDocument extends Document<{
   styleTags: any;
   serializedStylesheet: any;
 }> {
-  static async getInitialProps(ctx: DocumentContext) {
+  static async getInitialProps({renderPage}: DocumentContext) {
     resetIds();
-    const initialProps = await Document.getInitialProps(ctx);
+    // const initialProps = await Document.getInitialProps(ctx);
+    const page = renderPage(App => props => <App {...props} />);
     return {
-      ...initialProps,
+      // ...initialProps,
+      ...page,
       styleTags: stylesheet.getRules(true),
       serializedStylesheet: stylesheet.serialize(),
     };

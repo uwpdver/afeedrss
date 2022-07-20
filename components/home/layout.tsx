@@ -45,7 +45,7 @@ export default function Layout({ children }: Props) {
         )}
         <Stack
           grow
-          className={`fixed left-0 top-0 bottom-0 z-20 bg-gray-100 w-[calc(100% - 64px)] sm:w-[288px] transition-transform ease-in sm:translate-x-0 delay-100 ${
+          className={`fixed left-0 top-0 bottom-0 z-20 bg-gray-100 w-[calc(100% - 64px)] sm:w-[288px] transition-transform sm:translate-x-0 delay-100 ${
             isNavigationPanelOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -86,13 +86,7 @@ export default function Layout({ children }: Props) {
             </div>
           </Stack>
         </Stack>
-        <Stack
-          className={`bg-gray-200 transition-transform ease-in ${
-            isNavigationPanelOpen ? "scale-95" : "scale-none"
-          }`}
-          grow
-          horizontalAlign="center"
-        >
+        <Stack className="bg-gray-200" grow horizontalAlign="center">
           <Stack className="w-full max-w-4xl 2xl:max-w-5xl  bg-gray-50 relative h-full overflow-x-hidden">
             {children}
           </Stack>

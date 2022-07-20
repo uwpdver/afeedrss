@@ -39,6 +39,7 @@ import dayjs from "../utils/dayjs";
 import { GlobalSettingsCtx } from "./_app";
 import { getLayout } from "../components/home/layout";
 import { GlobalNavigationCtx } from "./../components/home/layout";
+import Swipeout from "../components/swipeout";
 
 interface Props {}
 
@@ -133,6 +134,47 @@ function Home({}: Props) {
     [queryClient, streamContentQueryKey]
   );
 
+  const markAboveAsRead = useCallback(
+    async (target: StreamContentItemWithPageIndex, isRead: boolean) => {
+      try {
+        const pendingIds:string[] = [];
+        queryClient.setQueryData(
+          streamContentQueryKey,
+          produce<InfiniteData<StreamContentsResponse>>((draft) => {
+            for (const key in draft.pages) {
+              if (Object.prototype.hasOwnProperty.call(draft.pages, key)) {
+                const { items } = draft.pages[key];
+                if (Number(key) < target.pageIndex) {
+                  items.forEach((item) => {
+                    if (!item.isRead !== isRead) {
+                      item.isRead = isRead;
+                      pendingIds.push(item.id);
+                    }
+                  });
+                } else if (Number(key) === target.pageIndex) {
+                  let hasFind = false;
+                  items.forEach((item) => {
+                    if (!hasFind) {
+                      if (item.isRead !== isRead) {
+                        item.isRead = isRead;
+                        pendingIds.push(item.id);
+                      }
+                      if (item.id === target.id) {
+                        hasFind = true;
+                      }
+                    }
+                  });
+                }
+              }
+            }
+          })
+        );
+        await server.inoreader.markArticleAsRead(pendingIds, !isRead);
+      } catch (error) {}
+    },
+    [queryClient, streamContentQueryKey]
+  );
+
   const onRenderCell = useCallback(
     (
       item?: StreamContentItemWithPageIndex,
@@ -144,7 +186,13 @@ function Home({}: Props) {
       const isSelected = curArticle?.id === item.id;
       const onRead: React.MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
+        e.preventDefault();
         markAsRead(item);
+      };
+
+      const onReadAbove: React.MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault();
+        markAboveAsRead(item, true);
       };
 
       const onClickTitle = () => {
@@ -159,48 +207,67 @@ function Home({}: Props) {
 
       return (
         <>
-          <div
-            data-is-focusable={true}
-            className={`flex space-x-4 mb-3 p-3 rounded-lg cursor-pointer break-all hover:bg-blue-100 transition ${
-              !isSelected && item?.isRead ? "opacity-30" : ""
-            } ${isSelected ? "ring-1 ring-inset bg-white" : ""}`}
-            onClick={onClickTitle}
+          <Swipeout
+            className="mb-3"
+            leftBtnsProps={[
+              {
+                className: "bg-yellow-300 text-white text-xl font-medium",
+                text: "已读",
+                onClick: onRead,
+              },
+              {
+                className: "bg-yellow-400 text-white text-xl font-medium",
+                text: "上方已读",
+                onClick: onReadAbove,
+              },
+            ]}
+            overswipeRatio={0.3}
+            btnWidth={96}
           >
-            {showFeedThumbnail ? (
-              <div className="shrink-0">
-                <Image
-                  src={filterImgSrcfromHtmlStr(item.summary.content)}
-                  width={80}
-                  height={80}
-                  imageFit={ImageFit.cover}
-                  className="bg-gray-300 rounded-md"
-                  alt=""
-                />
-              </div>
-            ) : null}
-            <div className="flex-1 flex flex-col">
-              <div className="flex-1">
-                <Text className="cursor-pointer" block>
-                  {title}
-                </Text>
-              </div>
-              <div className="flex items-center">
-                <Text className="text-xs text-gray-400 flex-1">
-                  {`${item.origin.title}/ ${dayjs(
-                    item?.published * 1000
-                  ).fromNow()}`}
-                </Text>
-                <div className=" shrink-0">
-                  <IconButton
-                    iconProps={{
-                      iconName: item.isRead ? "CompletedSolid" : "Completed",
-                    }}
-                    onClick={onRead}
+            <div
+              data-is-focusable={true}
+              className={`flex space-x-4 py-3 px-4 cursor-pointer break-all hover:bg-blue-100 transition ${
+                !isSelected && item?.isRead ? "opacity-30" : ""
+              } ${isSelected ? "bg-white" : ""}`}
+              onClick={onClickTitle}
+            >
+              {showFeedThumbnail ? (
+                <div className="shrink-0">
+                  <Image
+                    src={filterImgSrcfromHtmlStr(item.summary.content)}
+                    width={80}
+                    height={80}
+                    imageFit={ImageFit.cover}
+                    className="bg-gray-300 rounded-md"
+                    alt=""
                   />
+                </div>
+              ) : null}
+              <div className="flex-1 flex flex-col">
+                <div className="flex-1">
+                  <Text className="cursor-pointer" block>
+                    {title}
+                  </Text>
+                </div>
+                <div className="flex items-center">
+                  <Text className="text-xs text-gray-400 flex-1">
+                    {`${item.origin.title}/ ${dayjs(
+                      item?.published * 1000
+                    ).fromNow()}`}
+                  </Text>
+                  <div className="hidden shrink-0 sm:block">
+                    <IconButton
+                      iconProps={{
+                        iconName: item.isRead ? "CompletedSolid" : "Completed",
+                      }}
+                      onClick={onRead}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </Swipeout>
+
           {index === streamContentListItems.length - 1 ? (
             <Waypoint onEnter={onEnterWaypoint} />
           ) : null}
@@ -241,9 +308,12 @@ function Home({}: Props) {
 
   const midElem = (
     <Stack
-      className={`overflow-y-scroll scrollbar bg-gray-50 transition-transform ease-in`}
+      className={`overflow-y-scroll scrollbar bg-gray-50 transition-all`}
       style={{
-        transform: isArticlePanelOpen ? "translateX(-100%)" : "translateX(0)",
+        transform: isArticlePanelOpen
+          ? "translateX(-100%) opacity-0"
+          : "translateX(0) opacity-100",
+        opacity: isArticlePanelOpen ? 0 : 1,
       }}
     >
       {/* head */}
@@ -298,7 +368,7 @@ function Home({}: Props) {
       </Stack>
 
       {/* content */}
-      <div className="px-4 sm:px-10" data-is-scrollable="true">
+      <div className="sm:px-10" data-is-scrollable="true">
         {onRenderList()}
         <div className="flex justify-center w-full p-4">
           {streamContentQuery.isFetching && <Spinner />}
@@ -313,7 +383,7 @@ function Home({}: Props) {
 
   const articlePaneElem = (
     <Stack
-      className="absolute inset-0 h-full z-10 bg-gray-50 transition-transform ease-in"
+      className="absolute inset-0 h-full z-10 bg-gray-50 transition-all ease-in"
       style={{
         transform: isArticlePanelOpen ? "translateX(0)" : "translateX(100%)",
       }}

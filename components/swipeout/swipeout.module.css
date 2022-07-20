@@ -1,0 +1,70 @@
+.swipeout-container {
+  overflow: hidden;
+  position: relative;
+}
+
+.swipeout-left-btns-container,
+.swipeout-right-btns-container {
+  position: absolute;
+  top: 0;
+
+  display: flex;
+  height: 100%;
+}
+
+.swipeout-left-btns-container {
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.swipeout-right-btns-container {
+  right: 0;
+  transform: translateX(100%);
+}
+
+.swipeout-action-btn {
+  position: relative;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+}
+
+.swipeout-left-btns-container .swipeout-action-btn:first-child::after,
+.swipeout-right-btns-container .swipeout-action-btn:last-child::before {
+  content: " ";
+
+  position: absolute;
+  z-index: -1;
+  top: 0;
+
+  height: 100%;
+  width: 100vw;
+
+  background: inherit;
+}
+
+.swipeout-action-btn--overswipe {
+  transition-duration: 200ms;
+  transition-property: left;
+}
+
+.swipeout-left-btns-container .swipeout-action-btn:first-child::after {
+  left: 1px;
+  transform: translate3d(-100%, 0px, 0px);
+}
+
+.swipeout-right-btns-container .swipeout-action-btn:last-child::before {
+  left: calc(100% - 1px);
+  transform: translate3d(0px, 0px, 0px);
+}
+
+.swipeout-transitioning .swipeout-content,
+.swipeout-transitioning .swipeout-left-btns-container,
+.swipeout-transitioning .swipeout-right-btns-container,
+.swipeout-transitioning .swipeout-action-btn {
+  transition-duration: 300ms;
+  transition-property: transform, left;
+}
