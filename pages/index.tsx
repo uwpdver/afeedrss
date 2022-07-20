@@ -274,7 +274,7 @@ function Home({}: Props) {
         </>
       );
     },
-    [curArticle?.id, markAsRead, onEnterWaypoint, streamContentListItems.length]
+    [curArticle?.id, markAsRead, markAboveAsRead, onEnterWaypoint, streamContentListItems.length, showFeedThumbnail, router]
   );
 
   const onRenderList = () => {
