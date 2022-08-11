@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Head from "next/head";
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
@@ -7,6 +7,7 @@ import { initializeIcons, ThemeProvider } from "@fluentui/react";
 import "../styles/globals.css";
 import { lightTheme, darkTheme } from "../theme";
 import { NextPageWithLayout } from "../types";
+import { StorageKeys } from "../constants";
 
 initializeIcons();
 const isDarkMode = false;
@@ -37,9 +38,35 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         },
       })
   );
+
   const [globalSettings, setGlobalSettings] = React.useState<GlobalSettings>(
-    defaultGlobalSettings
+    () => {
+      let result = defaultGlobalSettings;
+      if (typeof localStorage !== "undefined") {
+        try {
+          const settings = localStorage.getItem(StorageKeys.SETTINGS);
+          if (settings !== null) {
+            result = settings && JSON.parse(settings);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      return result;
+    }
   );
+
+  useEffect(() => {
+    if (typeof localStorage !== "undefined") {
+      try {
+        const settings = JSON.stringify(globalSettings);
+        localStorage.setItem(StorageKeys.SETTINGS, settings);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }, [globalSettings]);
+
   const theme = isDarkMode ? darkTheme : lightTheme;
   const getLayout =
     (Component as NextPageWithLayout).getLayout ||

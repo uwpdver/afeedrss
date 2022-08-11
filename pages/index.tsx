@@ -137,7 +137,7 @@ function Home({}: Props) {
   const markAboveAsRead = useCallback(
     async (target: StreamContentItemWithPageIndex, isRead: boolean) => {
       try {
-        const pendingIds:string[] = [];
+        const pendingIds: string[] = [];
         queryClient.setQueryData(
           streamContentQueryKey,
           produce<InfiniteData<StreamContentsResponse>>((draft) => {
@@ -211,12 +211,12 @@ function Home({}: Props) {
             className="mb-3"
             leftBtnsProps={[
               {
-                className: "bg-yellow-300 text-white text-xl font-medium",
+                className: "bg-yellow-300 text-white font-medium",
                 text: "已读",
                 onClick: onRead,
               },
               {
-                className: "bg-yellow-400 text-white text-xl font-medium",
+                className: "bg-yellow-400 text-white font-medium",
                 text: "上方已读",
                 onClick: onReadAbove,
               },
@@ -226,31 +226,60 @@ function Home({}: Props) {
           >
             <div
               data-is-focusable={true}
-              className={`flex space-x-4 py-3 px-4 cursor-pointer break-all hover:bg-blue-100 transition ${
+              className={`flex space-x-4 px-4 cursor-pointer break-all hover:bg-blue-100 transition ${
                 !isSelected && item?.isRead ? "opacity-30" : ""
-              } ${isSelected ? "bg-white" : ""}`}
+              } ${isSelected ? "bg-white" : ""} ${
+                showFeedThumbnail ? "py-3" : "items-center"
+              }`}
               onClick={onClickTitle}
             >
               {showFeedThumbnail ? (
-                <div className="shrink-0">
-                  <Image
-                    src={filterImgSrcfromHtmlStr(item.summary.content)}
-                    width={80}
-                    height={80}
-                    imageFit={ImageFit.cover}
-                    className="bg-gray-300 rounded-md"
-                    alt=""
-                  />
-                </div>
-              ) : null}
-              <div className="flex-1 flex flex-col">
-                <div className="flex-1">
-                  <Text className="cursor-pointer" block>
+                <>
+                  <div className="shrink-0">
+                    <Image
+                      src={filterImgSrcfromHtmlStr(item.summary.content)}
+                      width={80}
+                      height={80}
+                      imageFit={ImageFit.cover}
+                      className="bg-gray-300 rounded-md"
+                      alt=""
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex-1">
+                      <Text className="cursor-pointer" block>
+                        {title}
+                      </Text>
+                    </div>
+                    <div className="flex items-center">
+                      <Text className="text-xs text-gray-400 flex-1">
+                        {`${item.origin.title}/ ${dayjs(
+                          item?.published * 1000
+                        ).fromNow()}`}
+                      </Text>
+                      <div className="hidden shrink-0 sm:block">
+                        <IconButton
+                          iconProps={{
+                            iconName: item.isRead
+                              ? "CompletedSolid"
+                              : "Completed",
+                          }}
+                          onClick={onRead}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Text className="flex-1 cursor-pointer" block nowrap>
                     {title}
                   </Text>
-                </div>
-                <div className="flex items-center">
-                  <Text className="text-xs text-gray-400 flex-1">
+                  <Text
+                    className="shrink-0 basis-48 text-xs text-gray-400 break-all"
+                    block
+                    nowrap
+                  >
                     {`${item.origin.title}/ ${dayjs(
                       item?.published * 1000
                     ).fromNow()}`}
@@ -263,8 +292,8 @@ function Home({}: Props) {
                       onClick={onRead}
                     />
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           </Swipeout>
 
@@ -274,7 +303,15 @@ function Home({}: Props) {
         </>
       );
     },
-    [curArticle?.id, markAsRead, markAboveAsRead, onEnterWaypoint, streamContentListItems.length, showFeedThumbnail, router]
+    [
+      curArticle?.id,
+      markAsRead,
+      markAboveAsRead,
+      onEnterWaypoint,
+      streamContentListItems.length,
+      showFeedThumbnail,
+      router,
+    ]
   );
 
   const onRenderList = () => {
